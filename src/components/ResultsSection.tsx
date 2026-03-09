@@ -79,7 +79,7 @@ const ResultsSection = ({ plan, input }: Props) => {
               size="lg"
             >
               <Play className="h-5 w-5" />
-              ▶ Start Workout
+              Start Workout
             </Button>
           </motion.div>
 
