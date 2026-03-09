@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CalendarDays, Clock, MapPin, Zap, Flame, Heart, Star, Filter,
-  CheckCircle2, X, Sparkles, Users, CreditCard,
+  CalendarDays, Clock, MapPin, Filter, CheckCircle2, X, Sparkles, Users,
+  CreditCard, ChevronRight, ChevronLeft, Dumbbell, Heart, Flame, Sun,
+  Leaf, Target, RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-/* ── Sample data ── */
+/* ═══════════════════════════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════════════════════════ */
 interface FitnessClass {
   id: string;
   studio: string;
@@ -21,27 +25,31 @@ interface FitnessClass {
   credits: number;
   spotsLeft: number;
   icon: string;
+  tags: string[]; // for matching quiz answers
 }
 
 const CLASSES: FitnessClass[] = [
-  { id: "1", studio: "CoreFlow Studio", type: "Pilates Flow", date: "Mar 10", time: "7:00 AM", location: "Downtown", duration: 50, difficulty: "Intermediate", credits: 6, spotsLeft: 4, icon: "🧘" },
-  { id: "2", studio: "IronHer Gym", type: "Strength Training", date: "Mar 10", time: "8:30 AM", location: "Midtown", duration: 45, difficulty: "Advanced", credits: 8, spotsLeft: 2, icon: "💪" },
-  { id: "3", studio: "Burn Lab", type: "HIIT Express", date: "Mar 10", time: "12:00 PM", location: "West Side", duration: 30, difficulty: "Intermediate", credits: 5, spotsLeft: 6, icon: "🔥" },
-  { id: "4", studio: "Zen & Tone", type: "Yoga Sculpt", date: "Mar 11", time: "6:30 AM", location: "Downtown", duration: 55, difficulty: "Beginner", credits: 5, spotsLeft: 8, icon: "✨" },
-  { id: "5", studio: "The Barre Room", type: "Barre Burn", date: "Mar 11", time: "9:00 AM", location: "East Village", duration: 50, difficulty: "Intermediate", credits: 7, spotsLeft: 3, icon: "🩰" },
-  { id: "6", studio: "Spin Society", type: "Cycling Power", date: "Mar 11", time: "5:30 PM", location: "Midtown", duration: 45, difficulty: "Advanced", credits: 9, spotsLeft: 1, icon: "🚴" },
-  { id: "7", studio: "FlowState", type: "Vinyasa Yoga", date: "Mar 12", time: "7:00 AM", location: "West Side", duration: 60, difficulty: "Beginner", credits: 4, spotsLeft: 10, icon: "🕉️" },
-  { id: "8", studio: "Burn Lab", type: "HIIT Express", date: "Mar 12", time: "12:30 PM", location: "West Side", duration: 30, difficulty: "Advanced", credits: 6, spotsLeft: 5, icon: "🔥" },
-  { id: "9", studio: "CoreFlow Studio", type: "Pilates Flow", date: "Mar 12", time: "6:00 PM", location: "Downtown", duration: 50, difficulty: "Beginner", credits: 5, spotsLeft: 7, icon: "🧘" },
-  { id: "10", studio: "IronHer Gym", type: "Strength Training", date: "Mar 13", time: "8:00 AM", location: "Midtown", duration: 45, difficulty: "Intermediate", credits: 7, spotsLeft: 4, icon: "💪" },
-  { id: "11", studio: "The Barre Room", type: "Barre Burn", date: "Mar 13", time: "10:00 AM", location: "East Village", duration: 50, difficulty: "Advanced", credits: 8, spotsLeft: 2, icon: "🩰" },
-  { id: "12", studio: "Zen & Tone", type: "Yoga Sculpt", date: "Mar 13", time: "4:00 PM", location: "Downtown", duration: 55, difficulty: "Intermediate", credits: 6, spotsLeft: 5, icon: "✨" },
+  { id: "1", studio: "CoreFlow Studio", type: "Pilates Flow", date: "Mar 10", time: "7:00 AM", location: "Downtown", duration: 50, difficulty: "Intermediate", credits: 6, spotsLeft: 4, icon: "🧘", tags: ["pilates", "flexibility", "toning", "moderate", "studio", "morning"] },
+  { id: "2", studio: "IronHer Gym", type: "Strength Training", date: "Mar 10", time: "8:30 AM", location: "Midtown", duration: 45, difficulty: "Advanced", credits: 8, spotsLeft: 2, icon: "💪", tags: ["strength", "toning", "high", "gym", "morning"] },
+  { id: "3", studio: "Burn Lab", type: "HIIT Express", date: "Mar 10", time: "12:00 PM", location: "West Side", duration: 30, difficulty: "Intermediate", credits: 5, spotsLeft: 6, icon: "🔥", tags: ["hiit", "weight-loss", "endurance", "high", "studio", "afternoon"] },
+  { id: "4", studio: "Zen & Tone", type: "Yoga Sculpt", date: "Mar 11", time: "6:30 AM", location: "Downtown", duration: 55, difficulty: "Beginner", credits: 5, spotsLeft: 8, icon: "✨", tags: ["yoga", "flexibility", "wellness", "low", "studio", "morning"] },
+  { id: "5", studio: "The Barre Room", type: "Barre Burn", date: "Mar 11", time: "9:00 AM", location: "East Village", duration: 50, difficulty: "Intermediate", credits: 7, spotsLeft: 3, icon: "🩰", tags: ["barre", "toning", "moderate", "studio", "morning"] },
+  { id: "6", studio: "Spin Society", type: "Cycling Power", date: "Mar 11", time: "5:30 PM", location: "Midtown", duration: 45, difficulty: "Advanced", credits: 9, spotsLeft: 1, icon: "🚴", tags: ["hiit", "endurance", "high", "gym", "evening"] },
+  { id: "7", studio: "FlowState", type: "Vinyasa Yoga", date: "Mar 12", time: "7:00 AM", location: "West Side", duration: 60, difficulty: "Beginner", credits: 4, spotsLeft: 10, icon: "🕉️", tags: ["yoga", "flexibility", "wellness", "low", "studio", "morning"] },
+  { id: "8", studio: "Burn Lab", type: "HIIT Express", date: "Mar 12", time: "12:30 PM", location: "West Side", duration: 30, difficulty: "Advanced", credits: 6, spotsLeft: 5, icon: "🔥", tags: ["hiit", "weight-loss", "high", "studio", "afternoon"] },
+  { id: "9", studio: "CoreFlow Studio", type: "Pilates Flow", date: "Mar 12", time: "6:00 PM", location: "Downtown", duration: 50, difficulty: "Beginner", credits: 5, spotsLeft: 7, icon: "🧘", tags: ["pilates", "flexibility", "toning", "low", "studio", "evening"] },
+  { id: "10", studio: "IronHer Gym", type: "Strength Circuit", date: "Mar 13", time: "8:00 AM", location: "Midtown", duration: 45, difficulty: "Intermediate", credits: 7, spotsLeft: 4, icon: "💪", tags: ["strength", "toning", "moderate", "gym", "morning"] },
+  { id: "11", studio: "The Barre Room", type: "Barre Burn", date: "Mar 13", time: "10:00 AM", location: "East Village", duration: 50, difficulty: "Advanced", credits: 8, spotsLeft: 2, icon: "🩰", tags: ["barre", "toning", "high", "studio", "morning"] },
+  { id: "12", studio: "Zen & Tone", type: "Yoga Sculpt", date: "Mar 13", time: "4:00 PM", location: "Downtown", duration: 55, difficulty: "Intermediate", credits: 6, spotsLeft: 5, icon: "✨", tags: ["yoga", "toning", "moderate", "studio", "afternoon"] },
+  { id: "13", studio: "Outdoor Fit Co.", type: "Park HIIT", date: "Mar 14", time: "6:30 AM", location: "Central Park", duration: 40, difficulty: "Intermediate", credits: 4, spotsLeft: 12, icon: "🌳", tags: ["hiit", "endurance", "weight-loss", "moderate", "outdoor", "morning"] },
+  { id: "14", studio: "Dance Fusion", type: "Dance Cardio", date: "Mar 14", time: "7:00 PM", location: "Downtown", duration: 50, difficulty: "Beginner", credits: 5, spotsLeft: 9, icon: "💃", tags: ["dance", "weight-loss", "moderate", "studio", "evening"] },
+  { id: "15", studio: "Virtual Sweat", type: "Online Strength", date: "Mar 14", time: "12:00 PM", location: "Online", duration: 35, difficulty: "Intermediate", credits: 3, spotsLeft: 50, icon: "💻", tags: ["strength", "toning", "moderate", "online", "afternoon"] },
 ];
 
-const CLASS_TYPES = ["All", "Pilates Flow", "Strength Training", "HIIT Express", "Yoga Sculpt", "Barre Burn", "Cycling Power", "Vinyasa Yoga"];
+const CLASS_TYPES = ["All", "Pilates Flow", "Strength Training", "HIIT Express", "Yoga Sculpt", "Barre Burn", "Cycling Power", "Vinyasa Yoga", "Strength Circuit", "Park HIIT", "Dance Cardio", "Online Strength"];
 const TIMES = ["All", "Morning", "Afternoon", "Evening"];
 const DIFFICULTIES = ["All", "Beginner", "Intermediate", "Advanced"];
-const LOCATIONS = ["All", "Downtown", "Midtown", "West Side", "East Village"];
+const LOCATIONS = ["All", "Downtown", "Midtown", "West Side", "East Village", "Central Park", "Online"];
 
 function getTimeOfDay(time: string): string {
   const h = parseInt(time);
@@ -53,13 +61,131 @@ function getTimeOfDay(time: string): string {
 }
 
 const diffColor: Record<string, string> = {
-  Beginner: "bg-green-100 text-green-700",
-  Intermediate: "bg-amber-100 text-amber-700",
-  Advanced: "bg-red-100 text-red-700",
+  Beginner: "bg-secondary text-green-700",
+  Intermediate: "bg-secondary text-amber-700",
+  Advanced: "bg-secondary text-red-700",
 };
+
+/* ═══════════════════════════════════════════════════════════════════
+   QUIZ CONFIG
+   ═══════════════════════════════════════════════════════════════════ */
+interface QuizQuestion {
+  id: string;
+  question: string;
+  options: { label: string; value: string; icon: string }[];
+  multi?: boolean;
+}
+
+const QUIZ: QuizQuestion[] = [
+  {
+    id: "frequency",
+    question: "How many classes do you usually attend per week?",
+    options: [
+      { label: "1–2", value: "1-2", icon: "🎯" },
+      { label: "3–4", value: "3-4", icon: "💪" },
+      { label: "5+", value: "5+", icon: "🔥" },
+    ],
+  },
+  {
+    id: "goals",
+    question: "What are your main fitness goals?",
+    multi: true,
+    options: [
+      { label: "Strength & toning", value: "toning", icon: "💪" },
+      { label: "Weight loss", value: "weight-loss", icon: "🔥" },
+      { label: "Flexibility & mobility", value: "flexibility", icon: "🧘" },
+      { label: "Endurance", value: "endurance", icon: "🏃" },
+      { label: "General wellness", value: "wellness", icon: "✨" },
+    ],
+  },
+  {
+    id: "types",
+    question: "What type of workouts do you enjoy most?",
+    multi: true,
+    options: [
+      { label: "Pilates", value: "pilates", icon: "🧘" },
+      { label: "Yoga", value: "yoga", icon: "🕉️" },
+      { label: "Strength training", value: "strength", icon: "💪" },
+      { label: "HIIT / Cardio", value: "hiit", icon: "🔥" },
+      { label: "Barre", value: "barre", icon: "🩰" },
+      { label: "Dance fitness", value: "dance", icon: "💃" },
+    ],
+  },
+  {
+    id: "intensity",
+    question: "What intensity level do you prefer?",
+    options: [
+      { label: "Low intensity", value: "low", icon: "🌿" },
+      { label: "Moderate", value: "moderate", icon: "⚡" },
+      { label: "High intensity", value: "high", icon: "🔥" },
+    ],
+  },
+  {
+    id: "venue",
+    question: "Where do you prefer to train?",
+    options: [
+      { label: "Studio classes", value: "studio", icon: "🏢" },
+      { label: "Gym classes", value: "gym", icon: "🏋️" },
+      { label: "Outdoor classes", value: "outdoor", icon: "🌳" },
+      { label: "Online classes", value: "online", icon: "💻" },
+      { label: "No preference", value: "any", icon: "🤷" },
+    ],
+  },
+  {
+    id: "time",
+    question: "What time of day do you prefer working out?",
+    options: [
+      { label: "Morning", value: "morning", icon: "🌅" },
+      { label: "Afternoon", value: "afternoon", icon: "☀️" },
+      { label: "Evening", value: "evening", icon: "🌙" },
+      { label: "Flexible", value: "flexible", icon: "🔄" },
+    ],
+  },
+];
+
+interface QuizPreferences {
+  frequency: string;
+  goals: string[];
+  types: string[];
+  intensity: string;
+  venue: string;
+  time: string;
+}
+
+const PREFS_KEY = "smartbells_class_prefs";
+
+function loadPrefs(): QuizPreferences | null {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function savePrefs(p: QuizPreferences) {
+  localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+}
+
+function scoreClass(c: FitnessClass, prefs: QuizPreferences): number {
+  let score = 0;
+  for (const g of prefs.goals) { if (c.tags.includes(g)) score += 3; }
+  for (const t of prefs.types) { if (c.tags.includes(t)) score += 3; }
+  if (c.tags.includes(prefs.intensity)) score += 2;
+  if (prefs.venue !== "any" && c.tags.includes(prefs.venue)) score += 2;
+  if (prefs.time !== "flexible" && c.tags.includes(prefs.time)) score += 1;
+  return score;
+}
+
+function getRecommended(prefs: QuizPreferences): FitnessClass[] {
+  const scored = CLASSES.map((c) => ({ c, score: scoreClass(c, prefs) }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.filter((s) => s.score > 0).map((s) => s.c);
+}
 
 const anim = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
+/* ═══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════ */
 const BookClasses = () => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [timeFilter, setTimeFilter] = useState("All");
@@ -67,6 +193,14 @@ const BookClasses = () => {
   const [locFilter, setLocFilter] = useState("All");
   const [booked, setBooked] = useState<Set<string>>(new Set());
   const [modalClass, setModalClass] = useState<FitnessClass | null>(null);
+
+  // Quiz state
+  const [prefs, setPrefs] = useState<QuizPreferences | null>(loadPrefs);
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [quizStep, setQuizStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+
+  const recommended = prefs ? getRecommended(prefs) : [];
 
   const filtered = CLASSES.filter((c) => {
     if (typeFilter !== "All" && c.type !== typeFilter) return false;
@@ -79,6 +213,69 @@ const BookClasses = () => {
   const handleReserve = (c: FitnessClass) => {
     setBooked((prev) => new Set(prev).add(c.id));
     setModalClass(c);
+  };
+
+  /* ── Quiz helpers ── */
+  const currentQ = QUIZ[quizStep];
+  const quizProgress = ((quizStep) / QUIZ.length) * 100;
+
+  const selectAnswer = (val: string) => {
+    if (currentQ.multi) {
+      const prev = (answers[currentQ.id] as string[]) || [];
+      const next = prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val];
+      setAnswers({ ...answers, [currentQ.id]: next });
+    } else {
+      setAnswers({ ...answers, [currentQ.id]: val });
+    }
+  };
+
+  const isSelected = (val: string) => {
+    const a = answers[currentQ.id];
+    if (Array.isArray(a)) return a.includes(val);
+    return a === val;
+  };
+
+  const canProceed = () => {
+    const a = answers[currentQ.id];
+    if (!a) return false;
+    if (Array.isArray(a)) return a.length > 0;
+    return true;
+  };
+
+  const nextStep = () => {
+    if (quizStep < QUIZ.length - 1) {
+      setQuizStep(quizStep + 1);
+    } else {
+      // Finish quiz
+      const newPrefs: QuizPreferences = {
+        frequency: (answers.frequency as string) || "1-2",
+        goals: (answers.goals as string[]) || [],
+        types: (answers.types as string[]) || [],
+        intensity: (answers.intensity as string) || "moderate",
+        venue: (answers.venue as string) || "any",
+        time: (answers.time as string) || "flexible",
+      };
+      setPrefs(newPrefs);
+      savePrefs(newPrefs);
+      setQuizOpen(false);
+      setQuizStep(0);
+      setAnswers({});
+    }
+  };
+
+  const prevStep = () => {
+    if (quizStep > 0) setQuizStep(quizStep - 1);
+  };
+
+  const startQuiz = () => {
+    setQuizOpen(true);
+    setQuizStep(0);
+    setAnswers({});
+  };
+
+  const resetPrefs = () => {
+    setPrefs(null);
+    localStorage.removeItem(PREFS_KEY);
   };
 
   return (
@@ -96,11 +293,55 @@ const BookClasses = () => {
           </p>
         </motion.div>
 
-        {/* Filters */}
+        {/* ═══ Quiz Entry / Recommendations ═══ */}
+        {!prefs && !quizOpen && (
+          <motion.div {...anim} transition={{ delay: 0.08 }} className="mb-8 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 md:p-8 text-center shadow-sm">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold mb-1">Find Your Perfect Classes</h2>
+            <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">
+              Answer a few quick questions so we can recommend classes that fit your lifestyle and goals.
+            </p>
+            <Button onClick={startQuiz} className="rounded-full gap-2 px-6 bg-primary hover:bg-primary/90">
+              <Target className="h-4 w-4" /> Start Quiz
+            </Button>
+          </motion.div>
+        )}
+
+        {prefs && !quizOpen && recommended.length > 0 && (
+          <motion.div {...anim} transition={{ delay: 0.08 }} className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" /> Recommended For You
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Based on your preferences, these classes may be a great fit for you.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={startQuiz} className="rounded-full text-xs gap-1">
+                  <RotateCcw className="h-3 w-3" /> Retake Quiz
+                </Button>
+                <Button variant="ghost" size="sm" onClick={resetPrefs} className="rounded-full text-xs text-muted-foreground">
+                  Clear
+                </Button>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recommended.slice(0, 6).map((c, i) => (
+                <ClassCard key={c.id} c={c} i={i} booked={booked} onReserve={handleReserve} recommended />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ═══ Filters ═══ */}
         <motion.div {...anim} transition={{ delay: 0.1 }} className="mb-8 rounded-2xl border border-border/50 bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Filters</span>
+            <span className="text-sm font-semibold">All Classes</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <FilterSelect label="Class Type" value={typeFilter} options={CLASS_TYPES} onChange={setTypeFilter} />
@@ -110,73 +351,14 @@ const BookClasses = () => {
           </div>
         </motion.div>
 
-        {/* Results count */}
         <motion.p {...anim} transition={{ delay: 0.15 }} className="text-sm text-muted-foreground mb-4">
           Showing <span className="font-semibold text-foreground">{filtered.length}</span> classes
         </motion.p>
 
-        {/* Class grid */}
+        {/* ═══ Class Grid ═══ */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((c, i) => (
-            <motion.div
-              key={c.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.04 }}
-              className="rounded-2xl border border-border/50 bg-card p-5 hover:shadow-lg transition-all group"
-            >
-              {/* Top row */}
-              <div className="flex items-start justify-between mb-3">
-                <span className="text-3xl">{c.icon}</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${diffColor[c.difficulty]}`}>
-                  {c.difficulty}
-                </span>
-              </div>
-
-              <h3 className="font-bold text-lg mb-0.5">{c.type}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{c.studio}</p>
-
-              {/* Details */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm text-foreground/70">
-                  <CalendarDays className="h-3.5 w-3.5 text-primary/60" />
-                  {c.date} • {c.time}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-foreground/70">
-                  <MapPin className="h-3.5 w-3.5 text-primary/60" />
-                  {c.location}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-foreground/70">
-                  <Clock className="h-3.5 w-3.5 text-primary/60" />
-                  {c.duration} min
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-sm font-semibold text-primary">
-                    <CreditCard className="h-3.5 w-3.5" /> {c.credits} credits
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="h-3 w-3" /> {c.spotsLeft} left
-                  </span>
-                </div>
-                {booked.has(c.id) ? (
-                  <span className="flex items-center gap-1 text-xs font-semibold text-green-600">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Booked
-                  </span>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleReserve(c)}
-                    className="rounded-full text-xs h-8 px-4 bg-primary hover:bg-primary/90"
-                  >
-                    Reserve Spot
-                  </Button>
-                )}
-              </div>
-            </motion.div>
+            <ClassCard key={c.id} c={c} i={i} booked={booked} onReserve={handleReserve} />
           ))}
         </div>
 
@@ -196,7 +378,116 @@ const BookClasses = () => {
       </main>
       <Footer />
 
-      {/* Confirmation modal */}
+      {/* ═══ Quiz Modal ═══ */}
+      <AnimatePresence>
+        {quizOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div className="absolute inset-0 bg-foreground/60 backdrop-blur-sm" onClick={() => setQuizOpen(false)} />
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="relative z-10 w-full max-w-md rounded-3xl bg-card p-6 md:p-8 shadow-2xl border border-border/40"
+            >
+              <Button
+                variant="ghost" size="icon" onClick={() => setQuizOpen(false)}
+                className="absolute top-3 right-3 rounded-full h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+
+              {/* Progress */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    Question {quizStep + 1} of {QUIZ.length}
+                  </span>
+                  <span className="text-[10px] font-semibold text-primary">{Math.round(quizProgress)}%</span>
+                </div>
+                <Progress value={quizProgress} className="h-2" />
+              </div>
+
+              {/* Question */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={quizStep}
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <h3 className="text-lg font-bold mb-1">{currentQ.question}</h3>
+                  {currentQ.multi && (
+                    <p className="text-xs text-muted-foreground mb-4">Select all that apply</p>
+                  )}
+                  {!currentQ.multi && (
+                    <p className="text-xs text-muted-foreground mb-4">Choose one</p>
+                  )}
+
+                  <div className="grid gap-2">
+                    {currentQ.options.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          selectAnswer(opt.value);
+                          // Auto-advance on single-select
+                          if (!currentQ.multi) {
+                            setTimeout(() => {
+                              setAnswers((prev) => ({ ...prev, [currentQ.id]: opt.value }));
+                              if (quizStep < QUIZ.length - 1) {
+                                setQuizStep((s) => s + 1);
+                              }
+                            }, 200);
+                          }
+                        }}
+                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition-all ${
+                          isSelected(opt.value)
+                            ? "border-primary bg-primary/10 text-primary shadow-sm"
+                            : "border-border/50 bg-secondary/30 text-foreground hover:bg-secondary/60"
+                        }`}
+                      >
+                        <span className="text-xl">{opt.icon}</span>
+                        <span className="flex-1">{opt.label}</span>
+                        {isSelected(opt.value) && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between mt-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={prevStep}
+                  disabled={quizStep === 0}
+                  className="rounded-full gap-1 disabled:opacity-30"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Back
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={nextStep}
+                  disabled={!canProceed()}
+                  className="rounded-full gap-1 bg-primary hover:bg-primary/90 disabled:opacity-30"
+                >
+                  {quizStep === QUIZ.length - 1 ? "See Results" : "Next"}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Booking Confirmation Modal ═══ */}
       <AnimatePresence>
         {modalClass && (
           <motion.div
@@ -219,8 +510,8 @@ const BookClasses = () => {
                 <X className="h-4 w-4" />
               </Button>
 
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-2">Class Booked!</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -247,7 +538,79 @@ const BookClasses = () => {
   );
 };
 
-/* ── Filter dropdown ── */
+/* ═══════════════════════════════════════════════════════════════════
+   SUB-COMPONENTS
+   ═══════════════════════════════════════════════════════════════════ */
+const ClassCard = ({ c, i, booked, onReserve, recommended }: {
+  c: FitnessClass; i: number; booked: Set<string>;
+  onReserve: (c: FitnessClass) => void; recommended?: boolean;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.05 + i * 0.04 }}
+    className={`rounded-2xl border bg-card p-5 hover:shadow-lg transition-all group ${
+      recommended ? "border-primary/30 ring-1 ring-primary/10" : "border-border/50"
+    }`}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <span className="text-3xl">{c.icon}</span>
+      <div className="flex items-center gap-1.5">
+        {recommended && (
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary">
+            Recommended
+          </span>
+        )}
+        <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${diffColor[c.difficulty]}`}>
+          {c.difficulty}
+        </span>
+      </div>
+    </div>
+
+    <h3 className="font-bold text-lg mb-0.5">{c.type}</h3>
+    <p className="text-sm text-muted-foreground mb-4">{c.studio}</p>
+
+    <div className="space-y-2 mb-4">
+      <div className="flex items-center gap-2 text-sm text-foreground/70">
+        <CalendarDays className="h-3.5 w-3.5 text-primary/60" />
+        {c.date} • {c.time}
+      </div>
+      <div className="flex items-center gap-2 text-sm text-foreground/70">
+        <MapPin className="h-3.5 w-3.5 text-primary/60" />
+        {c.location}
+      </div>
+      <div className="flex items-center gap-2 text-sm text-foreground/70">
+        <Clock className="h-3.5 w-3.5 text-primary/60" />
+        {c.duration} min
+      </div>
+    </div>
+
+    <div className="flex items-center justify-between pt-3 border-t border-border/40">
+      <div className="flex items-center gap-3">
+        <span className="flex items-center gap-1 text-sm font-semibold text-primary">
+          <CreditCard className="h-3.5 w-3.5" /> {c.credits} credits
+        </span>
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Users className="h-3 w-3" /> {c.spotsLeft} left
+        </span>
+      </div>
+      {booked.has(c.id) ? (
+        <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+          <CheckCircle2 className="h-3.5 w-3.5" /> Booked
+        </span>
+      ) : (
+        <Button
+          size="sm"
+          onClick={() => onReserve(c)}
+          className="rounded-full text-xs h-8 px-4 bg-primary hover:bg-primary/90"
+        >
+          Reserve Spot
+        </Button>
+      )}
+    </div>
+  </motion.div>
+);
+
 const FilterSelect = ({ label, value, options, onChange }: {
   label: string; value: string; options: string[]; onChange: (v: string) => void;
 }) => (
