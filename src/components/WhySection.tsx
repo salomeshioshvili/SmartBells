@@ -27,7 +27,7 @@ const WhySection = () => (
         Women's bodies respond differently to training, and factors like hormonal cycles
         significantly impact energy and recovery.{" "}
         <strong className="text-foreground">
-          HerFit AI offers a women-aware starting point.
+          SmartBells offers a women-aware starting point.
         </strong>
       </p>
       <ul className="space-y-2.5">
