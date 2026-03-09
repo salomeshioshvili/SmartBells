@@ -85,3 +85,13 @@
     background: radial-gradient(ellipse at center, hsl(var(--primary) / 0.04), transparent 70%);
   }
 }
+
+@keyframes float-kb {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+  50% { opacity: 0.25; transform: translateX(-50%) scaleX(0.85); }
+}
