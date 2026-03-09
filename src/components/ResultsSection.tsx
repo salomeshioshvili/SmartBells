@@ -169,6 +169,14 @@ const ResultsSection = ({ plan, input }: Props) => {
                       {i + 1}
                     </div>
                     <h3 className="font-semibold">{day.focus}</h3>
+                    {/* Start Workout badge */}
+                    <button
+                      onClick={() => { setPlayerDay({ day, index: i }); setPlayerOpen(true); }}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      <Play className="h-3 w-3" />
+                      Start Workout
+                    </button>
                     {/* Watch & Follow badge */}
                     <button
                       onClick={() => openVideoForDay(day, i)}
