@@ -37,6 +37,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
+      <HeroSection />
       <WorkoutForm onGenerate={handleGenerate} isLoading={isLoading} />
 
       {isLoading && <LoadingOverlay visible={isLoading} />}
