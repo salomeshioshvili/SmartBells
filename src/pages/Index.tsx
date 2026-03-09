@@ -14,6 +14,7 @@ const Index = () => {
   const [lastInput, setLastInput] = useState<WorkoutInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const { currentUser, completeWorkout, addPoints } = useStore();
 
   const handleGenerate = (input: WorkoutInput) => {
     setIsLoading(true);
@@ -23,6 +24,10 @@ const Index = () => {
       const result = generateWorkoutPlan(input);
       setPlan(result);
       setIsLoading(false);
+      // Award points for generating a plan
+      if (currentUser) {
+        completeWorkout();
+      }
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
@@ -31,7 +36,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <HeroSection />
+      <Navbar />
       <WorkoutForm onGenerate={handleGenerate} isLoading={isLoading} />
 
       {isLoading && <LoadingOverlay visible={isLoading} />}
