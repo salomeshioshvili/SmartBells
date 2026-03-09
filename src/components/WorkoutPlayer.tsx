@@ -315,27 +315,21 @@ const SVGCharacter = ({ animType, breathing, paused }: CharacterProps) => {
    ═══════════════════════════════════════════════════════════════════ */
 const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
   const is = (g: MuscleGroup) => active.includes(g) || active.includes("full");
-  const on = "fill: hsl(var(--primary) / 0.55); filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.3));";
-  const off = "fill: hsl(var(--primary) / 0.1);";
+  const onFill = "hsl(340 65% 58% / 0.55)";
+  const offFill = "hsl(340 65% 58% / 0.1)";
+  const f = (g: MuscleGroup) => is(g) ? onFill : offFill;
   return (
     <svg viewBox="0 0 50 120" width="50" height="120">
-      {/* head */}
-      <circle cx="25" cy="8" r="7" style={{ fill: "hsl(var(--primary) / 0.1)" }} />
-      {/* torso */}
-      <rect x="14" y="17" width="22" height="30" rx="6" style={is("chest") || is("back") ? { cssText: on } : { cssText: off }} />
-      {/* shoulders */}
-      <rect x="6" y="15" width="10" height="8" rx="4" style={is("shoulders") ? { cssText: on } : { cssText: off }} />
-      <rect x="34" y="15" width="10" height="8" rx="4" style={is("shoulders") ? { cssText: on } : { cssText: off }} />
-      {/* arms */}
-      <rect x="4" y="24" width="8" height="24" rx="4" style={is("arms") ? { cssText: on } : { cssText: off }} />
-      <rect x="38" y="24" width="8" height="24" rx="4" style={is("arms") ? { cssText: on } : { cssText: off }} />
-      {/* core */}
-      <rect x="16" y="36" width="18" height="14" rx="4" style={is("core") ? { cssText: on } : { cssText: off }} />
-      {/* glutes */}
-      <rect x="14" y="50" width="22" height="10" rx="4" style={is("glutes") ? { cssText: on } : { cssText: off }} />
-      {/* legs */}
-      <rect x="10" y="62" width="12" height="36" rx="5" style={is("legs") ? { cssText: on } : { cssText: off }} />
-      <rect x="28" y="62" width="12" height="36" rx="5" style={is("legs") ? { cssText: on } : { cssText: off }} />
+      <circle cx="25" cy="8" r="7" fill={offFill} />
+      <rect x="14" y="17" width="22" height="30" rx="6" fill={f("chest")} />
+      <rect x="6" y="15" width="10" height="8" rx="4" fill={f("shoulders")} />
+      <rect x="34" y="15" width="10" height="8" rx="4" fill={f("shoulders")} />
+      <rect x="4" y="24" width="8" height="24" rx="4" fill={f("arms")} />
+      <rect x="38" y="24" width="8" height="24" rx="4" fill={f("arms")} />
+      <rect x="16" y="36" width="18" height="14" rx="4" fill={f("core")} />
+      <rect x="14" y="50" width="22" height="10" rx="4" fill={f("glutes")} />
+      <rect x="10" y="62" width="12" height="36" rx="5" fill={f("legs")} />
+      <rect x="28" y="62" width="12" height="36" rx="5" fill={f("legs")} />
     </svg>
   );
 };
