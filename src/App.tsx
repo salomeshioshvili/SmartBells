@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Challenges from "./pages/Challenges";
 import Leaderboard from "./pages/Leaderboard";
 import Nutrition from "./pages/Nutrition";
+import BookClasses from "./pages/BookClasses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/challenges" element={<Challenges />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/nutrition" element={<Nutrition />} />
+            <Route path="/classes" element={<BookClasses />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

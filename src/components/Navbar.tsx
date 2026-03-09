@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Dumbbell, LayoutDashboard, Target, Trophy, LogOut, LogIn, Apple } from "lucide-react";
+import { Dumbbell, LayoutDashboard, Target, Trophy, LogOut, LogIn, Apple, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 
@@ -14,6 +14,7 @@ const Navbar = () => {
     { to: "/challenges", label: "Challenges", icon: <Target className="h-4 w-4" /> },
     { to: "/leaderboard", label: "Leaderboard", icon: <Trophy className="h-4 w-4" /> },
     { to: "/nutrition", label: "Nutrition", icon: <Apple className="h-4 w-4" /> },
+    { to: "/classes", label: "Classes", icon: <CalendarDays className="h-4 w-4" /> },
   ];
 
   return (
