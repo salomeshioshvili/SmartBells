@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Challenges from "./pages/Challenges";
 import Leaderboard from "./pages/Leaderboard";
 import Nutrition from "./pages/Nutrition";
+import BookClasses from "./pages/BookClasses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
