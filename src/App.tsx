@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Challenges from "./pages/Challenges";
 import Leaderboard from "./pages/Leaderboard";
+import Nutrition from "./pages/Nutrition";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
