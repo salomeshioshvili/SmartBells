@@ -8,16 +8,17 @@ import { generateWorkoutPlan, type WorkoutInput, type WorkoutPlan } from "@/lib/
 
 const Index = () => {
   const [plan, setPlan] = useState<WorkoutPlan | null>(null);
+  const [lastInput, setLastInput] = useState<WorkoutInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = (input: WorkoutInput) => {
     setIsLoading(true);
     setPlan(null);
-    // Simulate brief loading for polish
     setTimeout(() => {
       const result = generateWorkoutPlan(input);
       setPlan(result);
+      setLastInput(input);
       setIsLoading(false);
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -29,9 +30,9 @@ const Index = () => {
     <div className="min-h-screen">
       <HeroSection />
       <WorkoutForm onGenerate={handleGenerate} isLoading={isLoading} />
-      
+
       <div ref={resultsRef}>
-        {plan && <ResultsSection plan={plan} />}
+        {plan && lastInput && <ResultsSection plan={plan} input={lastInput} />}
       </div>
 
       <WhySection />

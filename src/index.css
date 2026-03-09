@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,39 +6,40 @@
 
 @layer base {
   :root {
-    --background: 30 30% 98%;
-    --foreground: 280 20% 15%;
+    --background: 30 25% 97%;
+    --foreground: 280 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 280 20% 15%;
+    --card-foreground: 280 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 280 20% 15%;
+    --popover-foreground: 280 25% 12%;
 
-    --primary: 340 60% 62%;
+    --primary: 340 65% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 40% 95%;
+    --secondary: 30 35% 94%;
     --secondary-foreground: 280 20% 20%;
 
-    --muted: 30 20% 93%;
+    --muted: 30 18% 92%;
     --muted-foreground: 280 10% 45%;
 
-    --accent: 270 40% 80%;
-    --accent-foreground: 270 40% 20%;
+    --accent: 270 45% 78%;
+    --accent-foreground: 270 45% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 30 20% 90%;
-    --input: 30 20% 88%;
-    --ring: 340 60% 62%;
+    --border: 30 15% 90%;
+    --input: 30 15% 88%;
+    --ring: 340 65% 58%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    --lavender: 270 40% 80%;
-    --blush: 340 60% 92%;
+    --lavender: 270 45% 78%;
+    --blush: 340 60% 93%;
     --warm-beige: 30 40% 95%;
+    --rose-glow: 340 65% 58%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -62,5 +63,25 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-lg shadow-primary/[0.04];
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary;
+  }
+
+  .section-glow {
+    @apply relative;
+  }
+
+  .section-glow::before {
+    content: '';
+    @apply absolute inset-0 -z-10 rounded-3xl;
+    background: radial-gradient(ellipse at center, hsl(var(--primary) / 0.04), transparent 70%);
   }
 }
