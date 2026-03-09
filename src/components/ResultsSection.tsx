@@ -55,6 +55,8 @@ const ResultsSection = ({ plan, input }: Props) => {
   const [showConfetti, setShowConfetti] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDay, setModalDay] = useState<{ day: DayPlan; index: number } | null>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [playerDay, setPlayerDay] = useState<{ day: DayPlan; index: number } | null>(null);
 
   const video = getVideoForPlan(input.goal, input.experience, input.cyclePhase);
 
