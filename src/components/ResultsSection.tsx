@@ -100,12 +100,15 @@ const ResultsSection = ({ plan, input }: Props) => {
             className="mb-6"
           >
             <Button
-              onClick={() => openVideoForDay(plan.days[0], 0)}
+              onClick={() => {
+                setPlayerDay({ day: plan.days[0], index: 0 });
+                setPlayerOpen(true);
+              }}
               className="w-full h-14 rounded-2xl text-base font-semibold gap-2.5 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
               size="lg"
             >
               <Play className="h-5 w-5" />
-              Follow Along — Watch & Train
+              ▶ Start Workout
             </Button>
           </motion.div>
 
