@@ -922,10 +922,10 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                 </motion.div>
 
                 <div className="flex gap-3 justify-center flex-wrap">
-                  <Button onClick={reset} variant="outline" className="rounded-full border-white/20 text-white hover:bg-white/10">Restart</Button>
+                  <Button onClick={reset} variant="outline" className="rounded-full border-white/20 text-foreground hover:bg-white/10">Restart</Button>
                   <Button
                     variant="outline"
-                    className="rounded-full border-white/20 text-white hover:bg-white/10"
+                    className="rounded-full border-white/20 text-foreground hover:bg-white/10"
                     onClick={() => {
                       const text = `💪 SmartBells Workout Complete!\n📋 ${day.focus}\n⏱ ${fmt(totalElapsed)} | 🏋️ ${total} exercises | 🔥 ~${estimatedCalories} cal`;
                       if (navigator.share) navigator.share({ text }).catch(() => {});
@@ -934,7 +934,7 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                   >
                     <Share2 className="h-4 w-4 mr-1.5" /> Share
                   </Button>
-                  <Button onClick={onClose} className="rounded-full bg-primary hover:bg-primary/90">Done</Button>
+                  <Button onClick={onClose} className="rounded-full bg-primary hover:bg-primary/90 text-foreground">Done</Button>
                 </div>
               </motion.div>
             </motion.div>
