@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, Heart } from "lucide-react";
+import kettlebellImg from "@/assets/pink-kettlebell.png";
 
 const HeroSection = () => (
   <section className="relative overflow-hidden px-4 pt-24 pb-20 text-center md:pt-32 md:pb-24">
@@ -18,13 +19,10 @@ const HeroSection = () => (
         transition={{ delay: 0.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="order-first md:order-last flex-shrink-0"
       >
-        <lottie-player
-          src="https://assets2.lottiefiles.com/packages/lf20_x62chJ.json"
-          background="transparent"
-          speed="1"
-          style={{ width: "280px", height: "280px" }}
-          loop
-          autoplay
+        <img
+          src={kettlebellImg}
+          alt="Pink kettlebell"
+          className="w-[280px] h-[280px] object-contain drop-shadow-xl"
         />
       </motion.div>
 
