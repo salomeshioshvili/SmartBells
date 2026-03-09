@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import HeroSection from "@/components/HeroSection";
 import WorkoutForm from "@/components/WorkoutForm";
 import ResultsSection from "@/components/ResultsSection";
+import LoadingOverlay from "@/components/LoadingOverlay";
 import WhySection from "@/components/WhySection";
 import Footer from "@/components/Footer";
 import { generateWorkoutPlan, type WorkoutInput, type WorkoutPlan } from "@/lib/workoutGenerator";
@@ -15,21 +16,23 @@ const Index = () => {
   const handleGenerate = (input: WorkoutInput) => {
     setIsLoading(true);
     setPlan(null);
+    setLastInput(input);
     setTimeout(() => {
       const result = generateWorkoutPlan(input);
       setPlan(result);
-      setLastInput(input);
       setIsLoading(false);
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
-    }, 800);
+    }, 2500);
   };
 
   return (
     <div className="min-h-screen">
       <HeroSection />
       <WorkoutForm onGenerate={handleGenerate} isLoading={isLoading} />
+
+      {isLoading && <LoadingOverlay visible={isLoading} />}
 
       <div ref={resultsRef}>
         {plan && lastInput && <ResultsSection plan={plan} input={lastInput} />}
