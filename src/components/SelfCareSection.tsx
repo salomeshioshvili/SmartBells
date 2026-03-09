@@ -83,7 +83,7 @@ const SelfCareSection = () => (
       className="mb-10 text-center"
     >
       <h2 className="mb-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-        Care &amp; Self-Care
+        Self Care
       </h2>
       <p className="mx-auto max-w-xl text-muted-foreground">
         Support your body with gentle movement and recovery tips throughout your
