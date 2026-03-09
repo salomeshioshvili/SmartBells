@@ -11,9 +11,9 @@ const Leaderboard = () => {
   const friendIds = currentUser ? [currentUser.id, ...currentUser.friends] : [];
 
   const rankIcon = (i: number) => {
-    if (i === 0) return <Crown className="h-5 w-5 text-yellow-500" />;
-    if (i === 1) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (i === 2) return <Medal className="h-5 w-5 text-amber-600" />;
+    if (i === 0) return <Crown className="h-5 w-5 text-primary" />;
+    if (i === 1) return <Medal className="h-5 w-5 text-muted-foreground" />;
+    if (i === 2) return <Medal className="h-5 w-5 text-accent-foreground" />;
     return <span className="text-sm font-bold text-muted-foreground w-5 text-center">{i + 1}</span>;
   };
 

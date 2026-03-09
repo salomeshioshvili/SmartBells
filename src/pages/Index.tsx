@@ -5,7 +5,9 @@ import ResultsSection from "@/components/ResultsSection";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import WhySection from "@/components/WhySection";
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 import { generateWorkoutPlan, type WorkoutInput, type WorkoutPlan } from "@/lib/workoutGenerator";
+import { useStore } from "@/lib/store";
 
 const Index = () => {
   const [plan, setPlan] = useState<WorkoutPlan | null>(null);
