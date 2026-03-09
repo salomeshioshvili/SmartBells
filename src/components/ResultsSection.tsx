@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { categorizeExercise, CATEGORY_LOTTIE } from "@/lib/exerciseCategory";
 import { getVideoForPlan, getThumbnailUrl } from "@/lib/videoMapping";
 import VideoModal from "@/components/VideoModal";
+import WorkoutPlayer from "@/components/WorkoutPlayer";
 import type { WorkoutPlan, WorkoutInput, DayPlan } from "@/lib/workoutGenerator";
 
 interface Props {
@@ -54,6 +55,8 @@ const ResultsSection = ({ plan, input }: Props) => {
   const [showConfetti, setShowConfetti] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDay, setModalDay] = useState<{ day: DayPlan; index: number } | null>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [playerDay, setPlayerDay] = useState<{ day: DayPlan; index: number } | null>(null);
 
   const video = getVideoForPlan(input.goal, input.experience, input.cyclePhase);
 
@@ -97,12 +100,15 @@ const ResultsSection = ({ plan, input }: Props) => {
             className="mb-6"
           >
             <Button
-              onClick={() => openVideoForDay(plan.days[0], 0)}
+              onClick={() => {
+                setPlayerDay({ day: plan.days[0], index: 0 });
+                setPlayerOpen(true);
+              }}
               className="w-full h-14 rounded-2xl text-base font-semibold gap-2.5 bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
               size="lg"
             >
               <Play className="h-5 w-5" />
-              Follow Along — Watch & Train
+              ▶ Start Workout
             </Button>
           </motion.div>
 
@@ -163,6 +169,14 @@ const ResultsSection = ({ plan, input }: Props) => {
                       {i + 1}
                     </div>
                     <h3 className="font-semibold">{day.focus}</h3>
+                    {/* Start Workout badge */}
+                    <button
+                      onClick={() => { setPlayerDay({ day, index: i }); setPlayerOpen(true); }}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                    >
+                      <Play className="h-3 w-3" />
+                      Start Workout
+                    </button>
                     {/* Watch & Follow badge */}
                     <button
                       onClick={() => openVideoForDay(day, i)}
@@ -253,6 +267,16 @@ const ResultsSection = ({ plan, input }: Props) => {
           videoTitle={video.title}
           day={modalDay.day}
           dayIndex={modalDay.index}
+        />
+      )}
+
+      {/* Workout Player */}
+      {playerDay && (
+        <WorkoutPlayer
+          open={playerOpen}
+          onClose={() => setPlayerOpen(false)}
+          day={playerDay.day}
+          dayIndex={playerDay.index}
         />
       )}
     </>
