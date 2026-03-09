@@ -104,8 +104,8 @@ const SelfCareSection = () => (
           whileHover={{ y: -4, scale: 1.02 }}
           className="group glass-card rounded-2xl p-5 transition-shadow hover:shadow-xl hover:shadow-primary/10"
         >
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blush text-2xl">
-            {ex.emoji}
+          <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl ${ex.bg}`}>
+            <ex.icon className={`h-5 w-5 ${ex.color}`} strokeWidth={1.8} />
           </div>
           <h3 className="mb-1 text-sm font-semibold text-foreground">
             {ex.name}
