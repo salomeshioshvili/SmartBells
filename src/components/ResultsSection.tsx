@@ -261,6 +261,16 @@ const ResultsSection = ({ plan, input }: Props) => {
           dayIndex={modalDay.index}
         />
       )}
+
+      {/* Workout Player */}
+      {playerDay && (
+        <WorkoutPlayer
+          open={playerOpen}
+          onClose={() => setPlayerOpen(false)}
+          day={playerDay.day}
+          dayIndex={playerDay.index}
+        />
+      )}
     </>
   );
 };
