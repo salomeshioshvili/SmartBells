@@ -165,8 +165,8 @@ const Dashboard = () => {
                   className="h-10 rounded-xl bg-secondary/50 text-sm"
                   onKeyDown={(e) => e.key === "Enter" && handleSendFriendRequest()}
                 />
-                <Button size="icon" className="h-10 w-10 rounded-xl flex-shrink-0" onClick={handleSendFriendRequest}>
-                  <UserPlus className="h-4 w-4" />
+                <Button size="icon" className="h-10 w-10 rounded-xl flex-shrink-0 bg-primary hover:bg-primary/90" onClick={handleSendFriendRequest}>
+                  <Dumbbell className="h-4 w-4 text-primary-foreground" />
                 </Button>
               </div>
 
