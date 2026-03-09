@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Dumbbell, LayoutDashboard, Target, Trophy, LogOut, LogIn, Apple } from "lucide-react";
+import { Dumbbell, LayoutDashboard, Target, Trophy, LogOut, LogIn, Apple, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 
