@@ -47,8 +47,7 @@ const HeroSection = () => (
         </motion.div>
 
         <h1 className="mb-5 text-5xl font-extrabold tracking-tight md:text-7xl">
-          Her<span className="gradient-text">Fit</span>{" "}
-          <span className="text-primary">AI</span>
+          Smart<span className="gradient-text">Bells</span>
         </h1>
 
         <p className="mb-4 text-xl font-medium text-foreground/75 md:text-2xl">
