@@ -35,296 +35,315 @@ function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   CSS STYLES — Detailed character with per-body-part animations
+   MUSCLE-BASED GRADIENT BACKGROUNDS
    ═══════════════════════════════════════════════════════════════════ */
-const playerCSS = `
-/* ── Character structure ── */
-.char {
-  position: relative;
-  width: 160px;
-  height: 280px;
-  margin: 0 auto;
+const muscleGradients: Record<string, [string, string]> = {
+  legs: ["#2a1a2e", "#1e1028"],
+  chest: ["#1e1530", "#2a1a35"],
+  back: ["#1a1e30", "#151828"],
+  shoulders: ["#251530", "#1e1028"],
+  core: ["#151e30", "#101828"],
+  glutes: ["#2e1a28", "#281020"],
+  arms: ["#201530", "#1a1028"],
+  full: ["#1e1525", "#151020"],
+};
+
+function getMuscleGradient(muscles: MuscleGroup[]): [string, string] {
+  return muscleGradients[muscles[0]] || muscleGradients.full;
 }
 
-/* Head */
-.c-head {
-  position: absolute;
-  width: 38px; height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 24px hsl(var(--primary) / 0.35);
-  z-index: 4;
-}
-.c-head::before, .c-head::after {
-  content: '';
-  position: absolute;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: hsl(var(--primary-foreground) / 0.8);
-  top: 15px;
-}
-.c-head::before { left: 11px; }
-.c-head::after { right: 11px; }
+/* ═══════════════════════════════════════════════════════════════════
+   SVG ANIMATED CHARACTER — requestAnimationFrame + sine waves
+   ═══════════════════════════════════════════════════════════════════ */
+const SKIN = "#F4A4A4";
+const SKIN_SHADOW = "#E08E8E";
+const OUTFIT = "#2D2D2D";
+const OUTFIT_LIGHT = "#3D3D3D";
+const HAIR = "#4A2C2A";
+const SHOE = "#1A1A1A";
 
-/* Neck */
-.c-neck {
-  position: absolute;
-  width: 10px; height: 12px;
-  background: hsl(var(--primary) / 0.7);
-  border-radius: 4px;
-  top: 36px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
+interface CharacterProps {
+  animType: AnimType;
+  breathing?: boolean;
+  paused?: boolean;
 }
 
-/* Torso */
-.c-torso {
-  position: absolute;
-  width: 40px; height: 65px;
-  background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.85));
-  border-radius: 12px 12px 8px 8px;
-  top: 46px; left: 50%;
-  transform: translateX(-50%);
-  transform-origin: top center;
-  z-index: 2;
-}
+const SVGCharacter = ({ animType, breathing, paused }: CharacterProps) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const rafRef = useRef<number>(0);
+  const tRef = useRef(0);
 
-/* Shoulders */
-.c-shoulder {
-  position: absolute;
-  width: 16px; height: 14px;
-  background: hsl(var(--primary) / 0.9);
-  border-radius: 8px;
-  top: 48px;
-  z-index: 3;
-}
-.c-shoulder.left { left: calc(50% - 36px); }
-.c-shoulder.right { left: calc(50% + 20px); }
+  const isFloor = ["pushups", "plank", "glutebridges", "donkeykicks"].includes(animType);
 
-/* Upper arms */
-.c-upper-arm {
-  position: absolute;
-  width: 12px; height: 36px;
-  background: hsl(var(--primary) / 0.8);
-  border-radius: 6px;
-  top: 56px;
-  transform-origin: top center;
-  z-index: 1;
-}
-.c-upper-arm.left { left: calc(50% - 34px); }
-.c-upper-arm.right { left: calc(50% + 22px); }
+  useEffect(() => {
+    if (paused) { cancelAnimationFrame(rafRef.current); return; }
 
-/* Forearms */
-.c-forearm {
-  position: absolute;
-  width: 10px; height: 30px;
-  background: hsl(var(--primary) / 0.7);
-  border-radius: 5px;
-  top: 88px;
-  transform-origin: top center;
-  z-index: 1;
-}
-.c-forearm.left { left: calc(50% - 32px); }
-.c-forearm.right { left: calc(50% + 22px); }
+    const animate = () => {
+      tRef.current += 0.025;
+      const t = tRef.current;
+      const svg = svgRef.current;
+      if (!svg) return;
 
-/* Hands */
-.c-hand {
-  position: absolute;
-  width: 10px; height: 10px;
-  background: hsl(var(--primary) / 0.9);
-  border-radius: 50%;
-  top: 116px;
-  z-index: 1;
-}
-.c-hand.left { left: calc(50% - 32px); }
-.c-hand.right { left: calc(50% + 22px); }
+      const s = Math.sin;
+      const $ = (id: string) => svg.getElementById(id);
 
-/* Hips */
-.c-hips {
-  position: absolute;
-  width: 36px; height: 14px;
-  background: hsl(var(--primary) / 0.85);
-  border-radius: 6px 6px 10px 10px;
-  top: 110px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-}
+      if (breathing) {
+        // Gentle breathing
+        const b = s(t * 1.5) * 0.02 + 1;
+        const torso = $("torso");
+        if (torso) torso.setAttribute("transform", `scale(${b}, ${b})`);
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
 
-/* Thighs */
-.c-thigh {
-  position: absolute;
-  width: 14px; height: 50px;
-  background: hsl(var(--primary) / 0.75);
-  border-radius: 7px;
-  top: 122px;
-  transform-origin: top center;
-  z-index: 1;
-}
-.c-thigh.left { left: calc(50% - 18px); }
-.c-thigh.right { left: calc(50% + 4px); }
+      // Reset transforms
+      const ids = ["body-group", "head-g", "torso", "l-upper-arm", "l-forearm",
+        "r-upper-arm", "r-forearm", "l-thigh", "l-shin", "r-thigh", "r-shin",
+        "hip-g"];
+      ids.forEach((id) => {
+        const el = $(id);
+        if (el) el.setAttribute("transform", "");
+      });
 
-/* Shins */
-.c-shin {
-  position: absolute;
-  width: 12px; height: 46px;
-  background: hsl(var(--primary) / 0.65);
-  border-radius: 6px;
-  top: 170px;
-  transform-origin: top center;
-  z-index: 1;
-}
-.c-shin.left { left: calc(50% - 16px); }
-.c-shin.right { left: calc(50% + 4px); }
+      switch (animType) {
+        case "squats": {
+          const d = s(t * 2.5) * 0.5 + 0.5; // 0→1→0
+          const drop = d * 35;
+          const kneeAngle = d * 45;
+          const armAngle = d * -50;
+          $("body-group")?.setAttribute("transform", `translate(0, ${drop})`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${kneeAngle}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-kneeAngle}, 0, 0)`);
+          $("l-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.6}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.6}, 0, 0)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armAngle}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${armAngle}, 0, 0)`);
+          break;
+        }
+        case "lunges": {
+          const d = s(t * 2) * 0.5 + 0.5;
+          const drop = d * 25;
+          $("body-group")?.setAttribute("transform", `translate(0, ${drop})`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${d * -35}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${d * 30}, 0, 0)`);
+          $("l-shin")?.setAttribute("transform", `rotate(${d * 15}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${d * -25}, 0, 0)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * 5}, 0, 0)`);
+          break;
+        }
+        case "pushups": {
+          const d = s(t * 2.2) * 0.5 + 0.5;
+          const armBend = d * 30;
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armBend}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${-armBend}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${armBend * 0.8}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${-armBend * 0.8}, 0, 0)`);
+          $("head-g")?.setAttribute("transform", `rotate(${d * 5}, 0, 0)`);
+          $("body-group")?.setAttribute("transform", `translate(0, ${d * 8})`);
+          break;
+        }
+        case "jumpingjacks": {
+          const d = s(t * 4) * 0.5 + 0.5;
+          const armAng = d * 160 - 80;
+          const legAng = d * 25;
+          const jump = s(t * 4) * -8;
+          $("body-group")?.setAttribute("transform", `translate(0, ${jump})`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${-armAng}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${armAng}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${-d * 20}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${d * 20}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-legAng}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${legAng}, 0, 0)`);
+          break;
+        }
+        case "plank": {
+          const b = s(t * 1.5) * 0.015 + 1;
+          $("torso")?.setAttribute("transform", `scale(1, ${b})`);
+          break;
+        }
+        case "glutebridges": {
+          const d = s(t * 2) * 0.5 + 0.5;
+          $("hip-g")?.setAttribute("transform", `translate(0, ${-d * 20})`);
+          $("torso")?.setAttribute("transform", `rotate(${-d * 10}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 20}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 20}, 0, 0)`);
+          break;
+        }
+        case "deadlift": {
+          const d = s(t * 1.8) * 0.5 + 0.5;
+          const hingeAngle = d * 55;
+          $("torso")?.setAttribute("transform", `rotate(${hingeAngle}, 0, 0)`);
+          $("head-g")?.setAttribute("transform", `rotate(${hingeAngle * 0.3}, 0, 0)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${d * 25}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${d * 25}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 10}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 10}, 0, 0)`);
+          break;
+        }
+        case "donkeykicks": {
+          const d = s(t * 2.5) * 0.5 + 0.5;
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 55}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${-d * 30}, 0, 0)`);
+          $("torso")?.setAttribute("transform", `scale(1, ${1 + s(t * 2.5) * 0.01})`);
+          break;
+        }
+        default: {
+          // Generic — gentle sway
+          const armSwing = s(t * 2) * 20;
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armSwing}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${-armSwing}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${s(t * 2) * 10}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${-s(t * 2) * 10}, 0, 0)`);
+        }
+      }
 
-/* Feet */
-.c-foot {
-  position: absolute;
-  width: 18px; height: 8px;
-  background: hsl(var(--primary) / 0.8);
-  border-radius: 4px 10px 4px 4px;
-  top: 214px;
-  z-index: 1;
-}
-.c-foot.left { left: calc(50% - 20px); }
-.c-foot.right { left: calc(50% + 2px); }
+      rafRef.current = requestAnimationFrame(animate);
+    };
 
-/* ═══════ SQUATS ═══════ */
-.anim-squats .c-head { animation: sq-head 2s ease-in-out infinite; }
-.anim-squats .c-torso { animation: sq-torso 2s ease-in-out infinite; }
-.anim-squats .c-hips { animation: sq-hips 2s ease-in-out infinite; }
-.anim-squats .c-thigh { animation: sq-thigh 2s ease-in-out infinite; }
-.anim-squats .c-shin { animation: sq-shin 2s ease-in-out infinite; }
-.anim-squats .c-foot { animation: sq-foot 2s ease-in-out infinite; }
-.anim-squats .c-upper-arm { animation: sq-arms 2s ease-in-out infinite; }
-.anim-squats .c-forearm { animation: sq-forearms 2s ease-in-out infinite; }
-.anim-squats .c-hand { animation: sq-hands 2s ease-in-out infinite; }
-.anim-squats .c-neck { animation: sq-neck 2s ease-in-out infinite; }
-.anim-squats .c-shoulder { animation: sq-shoulder 2s ease-in-out infinite; }
-@keyframes sq-head { 0%,100% { top:0; } 50% { top:40px; } }
-@keyframes sq-neck { 0%,100% { top:36px; } 50% { top:76px; } }
-@keyframes sq-torso { 0%,100% { height:65px; top:46px; } 50% { height:50px; top:82px; } }
-@keyframes sq-shoulder { 0%,100% { top:48px; } 50% { top:84px; } }
-@keyframes sq-hips { 0%,100% { top:110px; } 50% { top:130px; } }
-@keyframes sq-thigh { 0%,100% { top:122px; height:50px; } 50% { top:136px; height:38px; } }
-@keyframes sq-shin { 0%,100% { top:170px; } 50% { top:172px; } }
-@keyframes sq-foot { 0%,100% { top:214px; } 50% { top:214px; } }
-@keyframes sq-arms { 0%,100% { transform: rotate(0deg); top:56px; } 50% { transform: rotate(-50deg); top:88px; } }
-@keyframes sq-forearms { 0%,100% { top:88px; transform:rotate(0deg); } 50% { top:105px; transform:rotate(-40deg); } }
-@keyframes sq-hands { 0%,100% { top:116px; } 50% { top:120px; } }
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [animType, breathing, paused]);
 
-/* ═══════ LUNGES ═══════ */
-.anim-lunges .c-head { animation: lu-head 2.2s ease-in-out infinite; }
-.anim-lunges .c-neck { animation: lu-neck 2.2s ease-in-out infinite; }
-.anim-lunges .c-torso { animation: lu-torso 2.2s ease-in-out infinite; }
-.anim-lunges .c-thigh.left { animation: lu-thigh-l 2.2s ease-in-out infinite; }
-.anim-lunges .c-thigh.right { animation: lu-thigh-r 2.2s ease-in-out infinite; }
-.anim-lunges .c-shin.left { animation: lu-shin-l 2.2s ease-in-out infinite; }
-.anim-lunges .c-shin.right { animation: lu-shin-r 2.2s ease-in-out infinite; }
-.anim-lunges .c-hips { animation: lu-hips 2.2s ease-in-out infinite; }
-@keyframes lu-head { 0%,100% { top:0; } 50% { top:30px; } }
-@keyframes lu-neck { 0%,100% { top:36px; } 50% { top:66px; } }
-@keyframes lu-torso { 0%,100% { top:46px; } 50% { top:74px; } }
-@keyframes lu-hips { 0%,100% { top:110px; } 50% { top:128px; } }
-@keyframes lu-thigh-l { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-35deg); } }
-@keyframes lu-thigh-r { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(30deg); } }
-@keyframes lu-shin-l { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } }
-@keyframes lu-shin-r { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-20deg); } }
+  // Standing figure dimensions — pivot points for limb groups
+  const cx = 100; // center x
+  const headY = 18;
+  const neckY = 42;
+  const shoulderY = 52;
+  const torsoBottom = 110;
+  const hipY = 115;
 
-/* ═══════ PUSH-UPS ═══════ */
-.anim-pushups { transform: rotate(75deg) scale(0.7) translateX(-30px); transform-origin: center; }
-.anim-pushups .c-upper-arm { animation: pu-arms 1.6s ease-in-out infinite; }
-.anim-pushups .c-forearm { animation: pu-forearms 1.6s ease-in-out infinite; }
-.anim-pushups .c-torso { animation: pu-torso 1.6s ease-in-out infinite; }
-.anim-pushups .c-head { animation: pu-head 1.6s ease-in-out infinite; }
-@keyframes pu-arms { 0%,100% { height:36px; } 50% { height:24px; } }
-@keyframes pu-forearms { 0%,100% { height:30px; top:88px; } 50% { height:22px; top:78px; } }
-@keyframes pu-torso { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(4deg); } }
-@keyframes pu-head { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(5deg); } }
+  const standingFigure = (
+    <g id="body-group">
+      {/* ── Shadow on floor ── */}
+      <ellipse cx={cx} cy={245} rx={30} ry={6} fill="rgba(0,0,0,0.15)" />
 
-/* ═══════ JUMPING JACKS ═══════ */
-.anim-jumpingjacks .c-upper-arm.left { animation: jj-ua-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-upper-arm.right { animation: jj-ua-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-forearm.left { animation: jj-fa-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-forearm.right { animation: jj-fa-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-hand.left { animation: jj-h-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-hand.right { animation: jj-h-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-thigh.left { animation: jj-th-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-thigh.right { animation: jj-th-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-shin.left { animation: jj-sh-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-shin.right { animation: jj-sh-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-foot.left { animation: jj-ft-l 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-foot.right { animation: jj-ft-r 0.9s ease-in-out infinite; }
-.anim-jumpingjacks .c-head { animation: jj-head 0.9s ease-in-out infinite; }
-@keyframes jj-ua-l { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-70deg); } }
-@keyframes jj-ua-r { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(70deg); } }
-@keyframes jj-fa-l { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-30deg); } }
-@keyframes jj-fa-r { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(30deg); } }
-@keyframes jj-h-l { 0%,100% { left: calc(50% - 32px); } 50% { left: calc(50% - 54px); } }
-@keyframes jj-h-r { 0%,100% { left: calc(50% + 22px); } 50% { left: calc(50% + 44px); } }
-@keyframes jj-th-l { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-20deg); } }
-@keyframes jj-th-r { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(20deg); } }
-@keyframes jj-sh-l { 0%,100% { left: calc(50% - 16px); } 50% { left: calc(50% - 24px); } }
-@keyframes jj-sh-r { 0%,100% { left: calc(50% + 4px); } 50% { left: calc(50% + 12px); } }
-@keyframes jj-ft-l { 0%,100% { left: calc(50% - 20px); } 50% { left: calc(50% - 30px); } }
-@keyframes jj-ft-r { 0%,100% { left: calc(50% + 2px); } 50% { left: calc(50% + 12px); } }
-@keyframes jj-head { 0%,100% { top:0; } 50% { top:-10px; } }
+      {/* ── Hair (ponytail) ── */}
+      <g id="head-g" style={{ transformOrigin: `${cx}px ${neckY}px` }}>
+        <ellipse cx={cx} cy={headY} rx={16} ry={18} fill={SKIN} />
+        {/* Hair top */}
+        <path d={`M${cx - 14},${headY - 4} Q${cx - 16},${headY - 18} ${cx},${headY - 20} Q${cx + 16},${headY - 18} ${cx + 14},${headY - 4}`} fill={HAIR} />
+        {/* Ponytail */}
+        <path d={`M${cx + 10},${headY - 8} Q${cx + 28},${headY - 4} ${cx + 24},${headY + 16} Q${cx + 20},${headY + 24} ${cx + 14},${headY + 10}`} fill={HAIR} stroke={HAIR} strokeWidth="1" />
+        {/* Eyes */}
+        <circle cx={cx - 5} cy={headY} r={1.5} fill="#333" />
+        <circle cx={cx + 5} cy={headY} r={1.5} fill="#333" />
+        {/* Smile */}
+        <path d={`M${cx - 3},${headY + 5} Q${cx},${headY + 8} ${cx + 3},${headY + 5}`} fill="none" stroke="#C07070" strokeWidth="1.2" strokeLinecap="round" />
+      </g>
 
-/* ═══════ PLANK ═══════ */
-.anim-plank { transform: rotate(75deg) scale(0.7) translateX(-30px); transform-origin: center; }
-.anim-plank .c-torso { animation: pk-torso 3s ease-in-out infinite; }
-.anim-plank .c-head { animation: pk-head 3s ease-in-out infinite; }
-@keyframes pk-torso { 0%,100% { height:65px; } 50% { height:67px; } }
-@keyframes pk-head { 0%,100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(2px); } }
+      {/* ── Neck ── */}
+      <rect x={cx - 4} y={neckY - 6} width={8} height={12} rx={3} fill={SKIN} />
 
-/* ═══════ GLUTE BRIDGES ═══════ */
-.anim-glutebridges { transform: rotate(75deg) scale(0.7) translateX(-30px); transform-origin: center; }
-.anim-glutebridges .c-hips { animation: gb-hips 2s ease-in-out infinite; }
-.anim-glutebridges .c-torso { animation: gb-torso 2s ease-in-out infinite; }
-.anim-glutebridges .c-thigh { animation: gb-thigh 2s ease-in-out infinite; }
-@keyframes gb-hips { 0%,100% { top:110px; } 50% { top:96px; } }
-@keyframes gb-torso { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(-8deg); } }
-@keyframes gb-thigh { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
+      {/* ── Torso (sports bra + waist) ── */}
+      <g id="torso" style={{ transformOrigin: `${cx}px ${shoulderY}px` }}>
+        {/* Sports bra */}
+        <path d={`M${cx - 18},${shoulderY} Q${cx - 20},${shoulderY + 22} ${cx - 14},${shoulderY + 28} L${cx + 14},${shoulderY + 28} Q${cx + 20},${shoulderY + 22} ${cx + 18},${shoulderY}`} fill={OUTFIT} />
+        {/* Midriff skin */}
+        <rect x={cx - 14} y={shoulderY + 28} width={28} height={14} rx={4} fill={SKIN} />
+        {/* Waist/hips */}
+        <g id="hip-g" style={{ transformOrigin: `${cx}px ${hipY}px` }}>
+          <path d={`M${cx - 16},${shoulderY + 40} Q${cx - 18},${torsoBottom} ${cx - 16},${hipY} L${cx + 16},${hipY} Q${cx + 18},${torsoBottom} ${cx + 16},${shoulderY + 40}`} fill={OUTFIT} />
+        </g>
+      </g>
 
-/* ═══════ DEADLIFT ═══════ */
-.anim-deadlift .c-torso { animation: dl-torso 2.4s ease-in-out infinite; }
-.anim-deadlift .c-head { animation: dl-head 2.4s ease-in-out infinite; }
-.anim-deadlift .c-neck { animation: dl-neck 2.4s ease-in-out infinite; }
-.anim-deadlift .c-upper-arm { animation: dl-ua 2.4s ease-in-out infinite; }
-.anim-deadlift .c-forearm { animation: dl-fa 2.4s ease-in-out infinite; }
-.anim-deadlift .c-shoulder { animation: dl-sh 2.4s ease-in-out infinite; }
-@keyframes dl-torso { 0%,100% { transform: translateX(-50%) rotate(0deg); } 50% { transform: translateX(-50%) rotate(50deg); } }
-@keyframes dl-head { 0%,100% { top:0; left:50%; } 50% { top:38px; left:calc(50% + 28px); } }
-@keyframes dl-neck { 0%,100% { top:36px; } 50% { top:68px; left:calc(50% + 14px); } }
-@keyframes dl-sh { 0%,100% { top:48px; } 50% { top:76px; } }
-@keyframes dl-ua { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(35deg); } }
-@keyframes dl-fa { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(20deg); } }
+      {/* ── Left Arm ── */}
+      <g id="l-upper-arm" style={{ transformOrigin: `${cx - 18}px ${shoulderY + 2}px` }}>
+        <rect x={cx - 23} y={shoulderY} width={10} height={32} rx={5} fill={SKIN} />
+        {/* Forearm */}
+        <g id="l-forearm" style={{ transformOrigin: `${cx - 23}px ${shoulderY + 30}px` }}>
+          <rect x={cx - 22} y={shoulderY + 28} width={9} height={28} rx={4.5} fill={SKIN_SHADOW} />
+          {/* Hand */}
+          <ellipse cx={cx - 17.5} cy={shoulderY + 58} rx={5} ry={4} fill={SKIN} />
+        </g>
+      </g>
 
-/* ═══════ DONKEY KICKS ═══════ */
-.anim-donkeykicks { transform: rotate(75deg) scale(0.65) translateX(-30px); transform-origin: center; }
-.anim-donkeykicks .c-thigh.right { animation: dk-thigh 1.4s ease-in-out infinite; }
-.anim-donkeykicks .c-shin.right { animation: dk-shin 1.4s ease-in-out infinite; }
-.anim-donkeykicks .c-foot.right { animation: dk-foot 1.4s ease-in-out infinite; }
-@keyframes dk-thigh { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-50deg); } }
-@keyframes dk-shin { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-35deg); } }
-@keyframes dk-foot { 0%,100% { top:214px; } 50% { top:190px; } }
+      {/* ── Right Arm ── */}
+      <g id="r-upper-arm" style={{ transformOrigin: `${cx + 18}px ${shoulderY + 2}px` }}>
+        <rect x={cx + 13} y={shoulderY} width={10} height={32} rx={5} fill={SKIN} />
+        <g id="r-forearm" style={{ transformOrigin: `${cx + 23}px ${shoulderY + 30}px` }}>
+          <rect x={cx + 13} y={shoulderY + 28} width={9} height={28} rx={4.5} fill={SKIN_SHADOW} />
+          <ellipse cx={cx + 17.5} cy={shoulderY + 58} rx={5} ry={4} fill={SKIN} />
+        </g>
+      </g>
 
-/* ═══════ GENERIC ═══════ */
-.anim-generic .c-upper-arm.left { animation: gn-ua 1.4s ease-in-out infinite; }
-.anim-generic .c-upper-arm.right { animation: gn-ua 1.4s ease-in-out infinite reverse; }
-.anim-generic .c-forearm.left { animation: gn-fa 1.4s ease-in-out infinite; }
-.anim-generic .c-forearm.right { animation: gn-fa 1.4s ease-in-out infinite reverse; }
-@keyframes gn-ua { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-45deg); } }
-@keyframes gn-fa { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-20deg); } }
+      {/* ── Left Leg ── */}
+      <g id="l-thigh" style={{ transformOrigin: `${cx - 8}px ${hipY}px` }}>
+        <rect x={cx - 15} y={hipY} width={14} height={44} rx={7} fill={OUTFIT} />
+        <g id="l-shin" style={{ transformOrigin: `${cx - 8}px ${hipY + 42}px` }}>
+          <rect x={cx - 14} y={hipY + 40} width={12} height={42} rx={6} fill={OUTFIT_LIGHT} />
+          {/* Shoe */}
+          <ellipse cx={cx - 8} cy={hipY + 82} rx={10} ry={5} fill={SHOE} />
+        </g>
+      </g>
 
-/* ═══════ BREATHING (rest) ═══════ */
-.breathing .c-torso { animation: breathe 3s ease-in-out infinite !important; }
-.breathing .c-shoulder { animation: breathe-sh 3s ease-in-out infinite !important; }
-@keyframes breathe { 0%,100% { width:40px; height:65px; } 50% { width:44px; height:68px; } }
-@keyframes breathe-sh { 0%,100% { top:48px; } 50% { top:46px; } }
+      {/* ── Right Leg ── */}
+      <g id="r-thigh" style={{ transformOrigin: `${cx + 8}px ${hipY}px` }}>
+        <rect x={cx + 1} y={hipY} width={14} height={44} rx={7} fill={OUTFIT} />
+        <g id="r-shin" style={{ transformOrigin: `${cx + 8}px ${hipY + 42}px` }}>
+          <rect x={cx + 2} y={hipY + 40} width={12} height={42} rx={6} fill={OUTFIT_LIGHT} />
+          <ellipse cx={cx + 8} cy={hipY + 82} rx={10} ry={5} fill={SHOE} />
+        </g>
+      </g>
 
-/* ═══════ CONFETTI ═══════ */
+      {/* ── Floor line ── */}
+      <line x1="40" y1="248" x2="160" y2="248" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" strokeLinecap="round" />
+    </g>
+  );
+
+  // For floor exercises, rotate the whole scene
+  const sceneTransform = isFloor
+    ? `rotate(90, ${cx}, 140) translate(20, -30) scale(0.75)`
+    : "";
+
+  return (
+    <svg
+      ref={svgRef}
+      viewBox="0 0 200 260"
+      width="200"
+      height="260"
+      style={{ overflow: "visible" }}
+    >
+      <g transform={sceneTransform}>
+        {standingFigure}
+      </g>
+    </svg>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   MUSCLE DIAGRAM (kept compact)
+   ═══════════════════════════════════════════════════════════════════ */
+const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
+  const is = (g: MuscleGroup) => active.includes(g) || active.includes("full");
+  const on = "fill: hsl(var(--primary) / 0.55); filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.3));";
+  const off = "fill: hsl(var(--primary) / 0.1);";
+  return (
+    <svg viewBox="0 0 50 120" width="50" height="120">
+      {/* head */}
+      <circle cx="25" cy="8" r="7" style={{ fill: "hsl(var(--primary) / 0.1)" }} />
+      {/* torso */}
+      <rect x="14" y="17" width="22" height="30" rx="6" style={is("chest") || is("back") ? { cssText: on } : { cssText: off }} />
+      {/* shoulders */}
+      <rect x="6" y="15" width="10" height="8" rx="4" style={is("shoulders") ? { cssText: on } : { cssText: off }} />
+      <rect x="34" y="15" width="10" height="8" rx="4" style={is("shoulders") ? { cssText: on } : { cssText: off }} />
+      {/* arms */}
+      <rect x="4" y="24" width="8" height="24" rx="4" style={is("arms") ? { cssText: on } : { cssText: off }} />
+      <rect x="38" y="24" width="8" height="24" rx="4" style={is("arms") ? { cssText: on } : { cssText: off }} />
+      {/* core */}
+      <rect x="16" y="36" width="18" height="14" rx="4" style={is("core") ? { cssText: on } : { cssText: off }} />
+      {/* glutes */}
+      <rect x="14" y="50" width="22" height="10" rx="4" style={is("glutes") ? { cssText: on } : { cssText: off }} />
+      {/* legs */}
+      <rect x="10" y="62" width="12" height="36" rx="5" style={is("legs") ? { cssText: on } : { cssText: off }} />
+      <rect x="28" y="62" width="12" height="36" rx="5" style={is("legs") ? { cssText: on } : { cssText: off }} />
+    </svg>
+  );
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONFETTI
+   ═══════════════════════════════════════════════════════════════════ */
+const confettiCSS = `
 .confetti-p {
   position: absolute;
   border-radius: 2px;
@@ -336,82 +355,9 @@ const playerCSS = `
   70% { opacity:1; }
   100% { transform: translateY(100vh) rotate(1080deg) scale(0.3); opacity:0; }
 }
-
-/* ═══════ REP PULSE ═══════ */
 .rep-pulse { animation: rep-p 2s ease-in-out infinite; }
 @keyframes rep-p { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-
-/* ═══════ MUSCLE DIAGRAM ═══════ */
-.muscle-sil {
-  position: relative;
-  width: 50px;
-  height: 120px;
-}
-.m-part {
-  position: absolute;
-  border-radius: 4px;
-  background: hsl(var(--primary) / 0.12);
-  transition: background 0.5s ease, box-shadow 0.5s ease;
-}
-.m-part.active {
-  background: hsl(var(--primary) / 0.6);
-  box-shadow: 0 0 12px hsl(var(--primary) / 0.4);
-}
-.m-head-s { width:14px; height:14px; border-radius:50%; top:0; left:18px; }
-.m-torso-s { width:22px; height:30px; top:16px; left:14px; border-radius:6px; }
-.m-arm-l-s { width:8px; height:28px; top:18px; left:4px; border-radius:4px; }
-.m-arm-r-s { width:8px; height:28px; top:18px; left:38px; border-radius:4px; }
-.m-core-s { width:18px; height:14px; top:34px; left:16px; border-radius:4px; }
-.m-glute-s { width:22px; height:10px; top:48px; left:14px; border-radius:4px; }
-.m-leg-l-s { width:10px; height:36px; top:58px; left:10px; border-radius:5px; }
-.m-leg-r-s { width:10px; height:36px; top:58px; left:30px; border-radius:5px; }
-.m-sh-l-s { width:10px; height:8px; top:14px; left:6px; border-radius:4px; }
-.m-sh-r-s { width:10px; height:8px; top:14px; left:34px; border-radius:4px; }
 `;
-
-/* ═══════════════════════════════════════════════════════════════════
-   COMPONENTS
-   ═══════════════════════════════════════════════════════════════════ */
-const Character = ({ animType, breathing }: { animType: AnimType; breathing?: boolean }) => (
-  <div className={`char ${breathing ? "breathing" : `anim-${animType}`}`}>
-    <div className="c-head" />
-    <div className="c-neck" />
-    <div className="c-shoulder left" />
-    <div className="c-shoulder right" />
-    <div className="c-torso" />
-    <div className="c-upper-arm left" />
-    <div className="c-upper-arm right" />
-    <div className="c-forearm left" />
-    <div className="c-forearm right" />
-    <div className="c-hand left" />
-    <div className="c-hand right" />
-    <div className="c-hips" />
-    <div className="c-thigh left" />
-    <div className="c-thigh right" />
-    <div className="c-shin left" />
-    <div className="c-shin right" />
-    <div className="c-foot left" />
-    <div className="c-foot right" />
-  </div>
-);
-
-const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
-  const is = (g: MuscleGroup) => active.includes(g) || active.includes("full");
-  return (
-    <div className="muscle-sil">
-      <div className={`m-part m-head-s`} />
-      <div className={`m-part m-torso-s ${is("chest") || is("back") ? "active" : ""}`} />
-      <div className={`m-part m-arm-l-s ${is("arms") ? "active" : ""}`} />
-      <div className={`m-part m-arm-r-s ${is("arms") ? "active" : ""}`} />
-      <div className={`m-part m-sh-l-s ${is("shoulders") ? "active" : ""}`} />
-      <div className={`m-part m-sh-r-s ${is("shoulders") ? "active" : ""}`} />
-      <div className={`m-part m-core-s ${is("core") ? "active" : ""}`} />
-      <div className={`m-part m-glute-s ${is("glutes") ? "active" : ""}`} />
-      <div className={`m-part m-leg-l-s ${is("legs") ? "active" : ""}`} />
-      <div className={`m-part m-leg-r-s ${is("legs") ? "active" : ""}`} />
-    </div>
-  );
-};
 
 const ConfettiEffect = () => {
   const colors = [
@@ -440,7 +386,7 @@ const ConfettiEffect = () => {
 };
 
 /* ═══════════════════════════════════════════════════════════════════
-   PLAYER
+   WORKOUT PLAYER
    ═══════════════════════════════════════════════════════════════════ */
 interface WorkoutPlayerProps {
   open: boolean;
@@ -481,26 +427,24 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
   const [restTime, setRestTime] = useState(REST_SECONDS);
   const [done, setDone] = useState(false);
   const [repCount, setRepCount] = useState(0);
-  const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const total = exercises.length;
   const progress = done ? 100 : ((idx + (resting ? 0.5 : 0)) / total) * 100;
 
-  const clear = useCallback(() => { if (ref.current) { clearInterval(ref.current); ref.current = null; } }, []);
+  const clearTimer = useCallback(() => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } }, []);
 
   useEffect(() => {
     if (!open || paused || done) return;
-    clear();
-    ref.current = setInterval(() => {
+    clearTimer();
+    timerRef.current = setInterval(() => {
       if (resting) {
         setRestTime((t) => {
           if (t <= 1) {
             setResting(false);
             const n = idx + 1;
             if (n >= total) { setDone(true); onComplete?.(); return REST_SECONDS; }
-            setIdx(n);
-            setTimeLeft(exercises[n].totalSeconds);
-            setRepCount(0);
+            setIdx(n); setTimeLeft(exercises[n].totalSeconds); setRepCount(0);
             return REST_SECONDS;
           }
           return t - 1;
@@ -508,14 +452,13 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
       } else {
         setTimeLeft((t) => {
           if (t <= 1) { setResting(true); setRestTime(REST_SECONDS); return 0; }
-          // Count reps (~4s per rep)
           if (t % 4 === 0) setRepCount((r) => r + 1);
           return t - 1;
         });
       }
     }, 1000);
-    return clear;
-  }, [open, paused, resting, idx, done, total, exercises, clear, onComplete]);
+    return clearTimer;
+  }, [open, paused, resting, idx, done, total, exercises, clearTimer, onComplete]);
 
   const goNext = () => {
     if (idx + 1 >= total) { setDone(true); onComplete?.(); return; }
@@ -534,17 +477,19 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const cur = exercises[idx];
+  const [gradA, gradB] = cur ? getMuscleGradient(cur.muscles) : ["#1e1525", "#151020"];
 
   return (
     <>
-      <style>{playerCSS}</style>
+      <style>{confettiCSS}</style>
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#130d1a]/96 backdrop-blur-lg"
+            className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg"
+            style={{ background: `linear-gradient(160deg, ${gradA} 0%, ${gradB} 100%)` }}
           >
             <Button
               variant="ghost" size="icon" onClick={onClose}
@@ -554,7 +499,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
             </Button>
 
             {done ? (
-              /* ── COMPLETE ── */
               <motion.div initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative text-center px-6 max-w-md">
                 <ConfettiEffect />
                 <motion.div initial={{ y: 30 }} animate={{ y: 0 }} transition={{ delay: 0.2 }} className="relative z-10">
@@ -563,7 +507,7 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                   </div>
                   <h2 className="text-4xl font-bold text-white mb-3">Workout Complete! 🎉</h2>
                   <p className="text-white/50 mb-1">Day {dayIndex + 1}: {day.focus}</p>
-                  <p className="text-white/30 text-sm mb-8">You crushed {total} exercises. Amazing work!</p>
+                  <p className="text-white/30 text-sm mb-8">You crushed {total} exercises!</p>
                   <div className="flex gap-3 justify-center">
                     <Button onClick={reset} variant="outline" className="rounded-full border-white/20 text-white hover:bg-white/10">Restart</Button>
                     <Button onClick={onClose} className="rounded-full bg-primary hover:bg-primary/90">Done</Button>
@@ -571,7 +515,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                 </motion.div>
               </motion.div>
             ) : (
-              /* ── ACTIVE ── */
               <div className="w-full max-w-2xl px-4 md:px-8 flex flex-col items-center">
                 <p className="text-white/30 text-xs font-semibold uppercase tracking-[0.2em] mb-4">
                   Day {dayIndex + 1} — {day.focus}
@@ -579,7 +522,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
 
                 <AnimatePresence mode="wait">
                   {resting ? (
-                    /* REST */
                     <motion.div
                       key="rest"
                       initial={{ opacity: 0, y: 30 }}
@@ -590,12 +532,10 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                     >
                       <p className="text-white/40 text-sm uppercase tracking-[0.15em] mb-6">Rest & Breathe</p>
 
-                      {/* Breathing character */}
-                      <div className="mb-6 flex justify-center items-center h-[280px]">
-                        <Character animType="generic" breathing />
+                      <div className="mb-6 flex justify-center items-center">
+                        <SVGCharacter animType="generic" breathing />
                       </div>
 
-                      {/* Circular timer */}
                       <div className="relative mx-auto mb-6 flex h-28 w-28 items-center justify-center">
                         <svg className="absolute inset-0" viewBox="0 0 112 112">
                           <circle cx="56" cy="56" r="50" fill="none" stroke="hsl(var(--primary) / 0.12)" strokeWidth="5" />
@@ -617,7 +557,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                       </p>
                     </motion.div>
                   ) : (
-                    /* EXERCISE */
                     <motion.div
                       key={`ex-${idx}`}
                       initial={{ opacity: 0, x: 60 }}
@@ -626,7 +565,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                       transition={{ duration: 0.4 }}
                       className="w-full"
                     >
-                      {/* Exercise name */}
                       <motion.h2
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -639,9 +577,7 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                         {cur.sets} sets × {cur.reps} reps
                       </p>
 
-                      {/* Main area: character + muscle diagram */}
                       <div className="flex items-center justify-center gap-8 mb-6">
-                        {/* Muscle diagram */}
                         <div className="hidden md:flex flex-col items-center gap-2">
                           <MuscleDiagram active={cur.muscles} />
                           <div className="flex flex-wrap gap-1 max-w-[80px] justify-center">
@@ -653,12 +589,10 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                           </div>
                         </div>
 
-                        {/* Character */}
-                        <div className="flex justify-center items-center h-[280px] w-[160px]">
-                          <Character animType={cur.anim} />
+                        <div className="flex justify-center items-center">
+                          <SVGCharacter animType={cur.anim} paused={paused} />
                         </div>
 
-                        {/* Rep counter */}
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-white/30 text-[10px] uppercase tracking-widest">Reps</span>
                           <div className="rep-pulse flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 border border-primary/20">
@@ -667,7 +601,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                         </div>
                       </div>
 
-                      {/* Timer */}
                       <div className="text-center">
                         <div className="text-5xl font-mono font-bold text-primary mb-1">{fmt(timeLeft)}</div>
                         <p className="text-white/25 text-xs">Exercise {idx + 1} of {total}</p>
@@ -676,7 +609,6 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                   )}
                 </AnimatePresence>
 
-                {/* Controls */}
                 <div className="flex items-center gap-5 mt-8">
                   <Button
                     variant="ghost" size="icon" onClick={goPrev}
@@ -699,9 +631,8 @@ const WorkoutPlayer = ({ open, onClose, day, dayIndex, onComplete }: WorkoutPlay
                   </Button>
                 </div>
 
-                {/* Progress bar */}
                 <div className="w-full mt-8 max-w-md">
-                  <div className="h-2.5 w-full rounded-full bg-white/8 overflow-hidden">
+                  <div className="h-2.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
                     <motion.div
                       className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
                       animate={{ width: `${progress}%` }}
