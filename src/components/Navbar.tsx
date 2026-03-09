@@ -14,6 +14,7 @@ const Navbar = () => {
     { to: "/challenges", label: "Challenges", icon: <Target className="h-4 w-4" /> },
     { to: "/leaderboard", label: "Leaderboard", icon: <Trophy className="h-4 w-4" /> },
     { to: "/nutrition", label: "Nutrition", icon: <Apple className="h-4 w-4" /> },
+    { to: "/classes", label: "Classes", icon: <CalendarDays className="h-4 w-4" /> },
   ];
 
   return (
