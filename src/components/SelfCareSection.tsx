@@ -5,8 +5,12 @@ import {
   Moon,
   Wind,
   Heart,
-  Footprints,
   Info,
+  Flower2,
+  Spline,
+  RotateCcw,
+  Shield,
+  Footprints,
 } from "lucide-react";
 
 const exercises = [
@@ -14,31 +18,41 @@ const exercises = [
     name: "Child's Pose",
     description: "Helps relax the lower back and reduce abdominal tension.",
     benefit: "Lower back relief",
-    emoji: "🧘‍♀️",
+    icon: Flower2,
+    bg: "bg-blush",
+    color: "text-primary",
   },
   {
     name: "Cat-Cow Stretch",
     description: "Encourages gentle spinal movement and may reduce stiffness.",
     benefit: "Spinal mobility",
-    emoji: "🐱",
+    icon: Spline,
+    bg: "bg-lavender/30",
+    color: "text-accent-foreground",
   },
   {
     name: "Supine Twist",
     description: "Helps relieve lower back pressure and improve circulation.",
     benefit: "Circulation boost",
-    emoji: "🌀",
+    icon: RotateCcw,
+    bg: "bg-warm-beige",
+    color: "text-primary",
   },
   {
     name: "Knees-to-Chest",
     description: "May help ease abdominal pressure and reduce cramping.",
     benefit: "Cramp relief",
-    emoji: "🤗",
+    icon: Shield,
+    bg: "bg-blush",
+    color: "text-accent-foreground",
   },
   {
     name: "Gentle Walking",
     description: "Light movement that supports circulation and reduces fatigue.",
     benefit: "Energy support",
-    emoji: "🚶‍♀️",
+    icon: Footprints,
+    bg: "bg-lavender/30",
+    color: "text-primary",
   },
 ];
 
@@ -90,8 +104,8 @@ const SelfCareSection = () => (
           whileHover={{ y: -4, scale: 1.02 }}
           className="group glass-card rounded-2xl p-5 transition-shadow hover:shadow-xl hover:shadow-primary/10"
         >
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-blush text-2xl">
-            {ex.emoji}
+          <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl ${ex.bg}`}>
+            <ex.icon className={`h-5 w-5 ${ex.color}`} strokeWidth={1.8} />
           </div>
           <h3 className="mb-1 text-sm font-semibold text-foreground">
             {ex.name}
