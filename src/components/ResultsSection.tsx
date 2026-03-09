@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Calendar, Flame, Heart, Sparkles, Target, TrendingUp, Zap, Moon, Dumbbell, Timer, Play, Video,
+  Calendar, Flame, Heart, Sparkles, Target, TrendingUp, Zap, Moon, Dumbbell, Timer, Play,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categorizeExercise, CATEGORY_LOTTIE } from "@/lib/exerciseCategory";
-import { getVideoForPlan, getThumbnailUrl } from "@/lib/videoMapping";
-import VideoModal from "@/components/VideoModal";
 import WorkoutPlayer from "@/components/WorkoutPlayer";
 import type { WorkoutPlan, WorkoutInput, DayPlan } from "@/lib/workoutGenerator";
 
@@ -33,42 +31,15 @@ const ExerciseIcon = ({ name }: { name: string }) => {
   );
 };
 
-const VideoThumbnail = ({ videoId, onClick }: { videoId: string; onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className="group relative mt-3 w-full overflow-hidden rounded-xl border border-border/50 transition-shadow hover:shadow-md"
-  >
-    <img
-      src={getThumbnailUrl(videoId)}
-      alt="Follow along video"
-      className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-    />
-    <div className="absolute inset-0 flex items-center justify-center bg-foreground/20 group-hover:bg-foreground/10 transition-colors">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30">
-        <Play className="h-5 w-5 text-primary-foreground ml-0.5" />
-      </div>
-    </div>
-  </button>
-);
-
 const ResultsSection = ({ plan, input }: Props) => {
   const [showConfetti, setShowConfetti] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalDay, setModalDay] = useState<{ day: DayPlan; index: number } | null>(null);
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerDay, setPlayerDay] = useState<{ day: DayPlan; index: number } | null>(null);
-
-  const video = getVideoForPlan(input.goal, input.experience, input.cyclePhase);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 3000);
     return () => clearTimeout(t);
   }, []);
-
-  const openVideoForDay = (day: DayPlan, index: number) => {
-    setModalDay({ day, index });
-    setModalOpen(true);
-  };
 
   return (
     <>
@@ -92,7 +63,7 @@ const ResultsSection = ({ plan, input }: Props) => {
             </div>
           )}
 
-          {/* Follow Along CTA */}
+          {/* Start Workout CTA */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -169,21 +140,12 @@ const ResultsSection = ({ plan, input }: Props) => {
                       {i + 1}
                     </div>
                     <h3 className="font-semibold">{day.focus}</h3>
-                    {/* Start Workout badge */}
                     <button
                       onClick={() => { setPlayerDay({ day, index: i }); setPlayerOpen(true); }}
                       className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
                     >
                       <Play className="h-3 w-3" />
                       Start Workout
-                    </button>
-                    {/* Watch & Follow badge */}
-                    <button
-                      onClick={() => openVideoForDay(day, i)}
-                      className="inline-flex items-center gap-1 rounded-full bg-blush px-2.5 py-0.5 text-[10px] font-semibold text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
-                    >
-                      <Video className="h-3 w-3" />
-                      Watch & Follow
                     </button>
                   </div>
                   <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground">
@@ -214,12 +176,6 @@ const ResultsSection = ({ plan, input }: Props) => {
                     </div>
                   ))}
                 </div>
-
-                {/* Video thumbnail preview */}
-                <VideoThumbnail
-                  videoId={video.id}
-                  onClick={() => openVideoForDay(day, i)}
-                />
               </motion.div>
             ))}
           </div>
@@ -257,18 +213,6 @@ const ResultsSection = ({ plan, input }: Props) => {
           </motion.div>
         </div>
       </motion.section>
-
-      {/* Video Modal */}
-      {modalDay && (
-        <VideoModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          videoId={video.id}
-          videoTitle={video.title}
-          day={modalDay.day}
-          dayIndex={modalDay.index}
-        />
-      )}
 
       {/* Workout Player */}
       {playerDay && (
