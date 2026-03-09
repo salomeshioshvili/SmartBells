@@ -47,6 +47,7 @@ const Index = () => {
         {plan && lastInput && <ResultsSection plan={plan} input={lastInput} />}
       </div>
 
+      <SelfCareSection />
       <WhySection />
       <Footer />
     </div>
