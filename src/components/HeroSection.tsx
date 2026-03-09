@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, Heart } from "lucide-react";
+import kettlebellImg from "@/assets/pink-kettlebell.png";
 
 const HeroSection = () => (
   <section className="relative overflow-hidden px-4 pt-24 pb-20 text-center md:pt-32 md:pb-24">
