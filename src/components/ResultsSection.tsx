@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { categorizeExercise, CATEGORY_LOTTIE } from "@/lib/exerciseCategory";
 import { getVideoForPlan, getThumbnailUrl } from "@/lib/videoMapping";
 import VideoModal from "@/components/VideoModal";
+import WorkoutPlayer from "@/components/WorkoutPlayer";
 import type { WorkoutPlan, WorkoutInput, DayPlan } from "@/lib/workoutGenerator";
 
 interface Props {
