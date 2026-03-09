@@ -17,13 +17,18 @@ const HeroSection = () => (
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="order-first md:order-last flex-shrink-0"
+        className="order-first md:order-last flex-shrink-0 relative"
       >
-        <img
-          src={kettlebellImg}
-          alt="Pink kettlebell"
-          className="w-[280px] h-[280px] object-contain drop-shadow-xl"
-        />
+        {/* Floating kettlebell */}
+        <div className="animate-[float-kb_4s_ease-in-out_infinite] w-[180px] h-[180px] md:w-[200px] md:h-[200px]">
+          <img
+            src={kettlebellImg}
+            alt="Pink kettlebell"
+            className="w-full h-full object-contain drop-shadow-xl"
+          />
+        </div>
+        {/* Soft glow shadow underneath */}
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[60%] h-6 rounded-full bg-primary/20 blur-xl animate-[glow-pulse_4s_ease-in-out_infinite]" />
       </motion.div>
 
       {/* Text content */}
