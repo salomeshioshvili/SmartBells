@@ -38,8 +38,9 @@ export interface BadgeDef {
 // ── Seed Data ──────────────────────────────────────────────────────
 export const CHALLENGES: Challenge[] = [
   { id: "streak7", title: "7-Day Workout Streak", description: "Complete a workout every day for 7 days straight.", target: 7, unit: "days", reward: 300, duration: "7 days", icon: "🔥" },
-  { id: "ten2w", title: "10 Workouts in 2 Weeks", description: "Complete 10 workouts within 14 days.", target: 10, unit: "workouts", reward: 400, duration: "2 weeks", icon: "💪" },
-  { id: "daily30", title: "30-Min Daily Movement", description: "Move for at least 30 minutes every day for a week.", target: 7, unit: "days", reward: 250, duration: "7 days", icon: "⏱️" },
+  { id: "ten2w", title: "10 Workouts in 2 Weeks", description: "Complete 10 workouts within 14 days.", target: 10, unit: "workouts", reward: 500, duration: "2 weeks", icon: "💪" },
+  { id: "daily30", title: "30-Min Daily Movement", description: "Move for at least 30 minutes daily for 5 days.", target: 5, unit: "days", reward: 250, duration: "5 days", icon: "⏱️" },
+  { id: "weekend", title: "Weekend Warrior", description: "Complete 2 workouts during the weekend.", target: 2, unit: "workouts", reward: 150, duration: "Weekend", icon: "⚡" },
   { id: "steps", title: "Step Challenge", description: "Hit 10,000 steps a day for 5 days.", target: 5, unit: "days", reward: 200, duration: "5 days", icon: "👟" },
   { id: "flex5", title: "Flexibility Focus", description: "Complete 5 flexibility or yoga sessions.", target: 5, unit: "sessions", reward: 200, duration: "Ongoing", icon: "🧘" },
   { id: "early", title: "Early Bird", description: "Complete 3 morning workouts before 8 AM.", target: 3, unit: "workouts", reward: 150, duration: "Ongoing", icon: "🌅" },
