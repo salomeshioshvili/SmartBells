@@ -3,6 +3,7 @@ import HeroSection from "@/components/HeroSection";
 import WorkoutForm from "@/components/WorkoutForm";
 import ResultsSection from "@/components/ResultsSection";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import SelfCareSection from "@/components/SelfCareSection";
 import WhySection from "@/components/WhySection";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
