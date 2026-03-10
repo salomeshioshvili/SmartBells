@@ -75,7 +75,7 @@ const muscleGradients: Record<string, [string, string]> = {
   full: ["#1e1525", "#151020"],
 };
 
-function getMuscleGradient(muscles: MuscleGroup[]): [string, string] {
+export function getMuscleGradient(muscles: MuscleGroup[]): [string, string] {
   return muscleGradients[muscles[0]] || muscleGradients.full;
 }
 
