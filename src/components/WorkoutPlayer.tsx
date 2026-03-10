@@ -108,7 +108,7 @@ interface CharacterProps {
   faceState?: "neutral" | "exertion" | "rest";
 }
 
-const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbbells, needsBand, repFlash, faceState = "neutral" }: CharacterProps) => {
+export const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbbells, needsBand, repFlash, faceState = "neutral" }: CharacterProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
