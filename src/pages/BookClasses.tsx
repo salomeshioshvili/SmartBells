@@ -620,7 +620,20 @@ const ClassCard = ({ c, i, booked, onReserve, recommended }: {
     }`}
   >
     <div className="flex items-start justify-between mb-3">
-      <span className="text-3xl">{c.icon}</span>
+      {(() => {
+        const key = getClassIconKey(c);
+        const iconData = classIconMap[key];
+        const IconComp = iconData.icon;
+        return (
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            className={`flex h-11 w-11 items-center justify-center rounded-2xl ${iconData.bg} shadow-sm`}
+          >
+            <IconComp className={`h-5 w-5 ${iconData.color}`} strokeWidth={1.8} />
+          </motion.div>
+        );
+      })()}
       <div className="flex items-center gap-1.5">
         {recommended && (
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary">
