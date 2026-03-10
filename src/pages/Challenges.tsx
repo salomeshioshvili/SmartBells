@@ -1,12 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, Clock, Trophy, CheckCircle2, Sparkles, ArrowRight } from "lucide-react";
+import { Target, Clock, Trophy, CheckCircle2, Sparkles, ArrowRight, Flame, Dumbbell, Timer, Zap, Footprints, StretchHorizontal, Sunrise } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useStore, CHALLENGES, BADGES } from "@/lib/store";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+
+const challengeIconMap: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
+  flame: { icon: Flame, bg: "bg-gradient-to-br from-pink-100 to-rose-50", color: "text-primary" },
+  dumbbell: { icon: Dumbbell, bg: "bg-gradient-to-br from-lavender/40 to-purple-50", color: "text-purple-500" },
+  timer: { icon: Timer, bg: "bg-gradient-to-br from-blue-50 to-sky-100", color: "text-blue-500" },
+  zap: { icon: Zap, bg: "bg-gradient-to-br from-amber-50 to-yellow-100", color: "text-amber-500" },
+  footprints: { icon: Footprints, bg: "bg-gradient-to-br from-emerald-50 to-green-100", color: "text-emerald-500" },
+  "stretch-horizontal": { icon: StretchHorizontal, bg: "bg-gradient-to-br from-violet-50 to-fuchsia-50", color: "text-violet-500" },
+  sunrise: { icon: Sunrise, bg: "bg-gradient-to-br from-orange-50 to-amber-50", color: "text-orange-500" },
+};
 
 const cardAnim = (i: number) => ({
   initial: { opacity: 0, y: 24 } as const,
@@ -82,9 +92,20 @@ const Challenges = () => {
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary text-2xl">
-                    {ch.icon}
-                  </div>
+                  {(() => {
+                    const iconData = challengeIconMap[ch.icon];
+                    if (!iconData) return <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary text-2xl">{ch.icon}</div>;
+                    const IconComp = iconData.icon;
+                    return (
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 3 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                        className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${iconData.bg} shadow-sm`}
+                      >
+                        <IconComp className={`h-5.5 w-5.5 ${iconData.color}`} size={22} strokeWidth={1.8} />
+                      </motion.div>
+                    );
+                  })()}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-lg font-bold">{ch.title}</h3>
