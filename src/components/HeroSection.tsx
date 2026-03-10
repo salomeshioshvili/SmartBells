@@ -53,8 +53,8 @@ const HeroSection = () => (
           Smart<span className="gradient-text">Bells</span>
         </h1>
 
-        <p className="mb-4 text-xl font-medium text-foreground/75 md:text-2xl">
-          Personalized workout plans designed for women.
+        <p className="mb-4 text-2xl font-bold gradient-text md:text-3xl">
+          Fitness designed for women, not adapted for them.
         </p>
         <p className="max-w-md text-base text-muted-foreground leading-relaxed md:mx-0 mx-auto">
           Generate science-backed fitness routines tailored to your goals, experience, energy, and cycle.
