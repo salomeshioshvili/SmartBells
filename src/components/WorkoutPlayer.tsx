@@ -116,55 +116,57 @@ const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbb
   useEffect(() => {
     if (paused) { cancelAnimationFrame(rafRef.current); return; }
 
+    // Smooth easing helpers
+    const asymmetric = (time: number, speed: number) => {
+      const phase = ((time * speed) % (Math.PI * 2)) / (Math.PI * 2);
+      if (phase < 0.55) {
+        const p = phase / 0.55;
+        return p * p * (3 - 2 * p);
+      } else {
+        const p = (phase - 0.55) / 0.45;
+        return 1 - p * p * (3 - 2 * p);
+      }
+    };
+    const easeInOut = (val: number) => {
+      const n = Math.sin(val) * 0.5 + 0.5;
+      return n * n * (3 - 2 * n);
+    };
+
     const animate = () => {
-      tRef.current += 0.022;
+      tRef.current += 0.018;
       const t = tRef.current;
       const svg = svgRef.current;
       if (!svg) return;
 
       const s = Math.sin;
-      const c = Math.cos;
       const $ = (id: string) => svg.getElementById(id);
 
-      // ── Independent breathing cycle (always active) ──
-      const breathVal = s(t * 1.57) * 0.012 + 1; // ~4s cycle
+      const breathVal = s(t * 1.57) * 0.008 + 1;
       const breathEl = $("breath-torso");
       if (breathEl) breathEl.setAttribute("transform", `scale(${breathVal}, ${breathVal})`);
 
-      // ── Ponytail secondary motion (lagged sine) ──
-      const ponyLag = s(t * 2.5 - 0.6) * 8; // delayed behind body
+      const ponyLag = s(t * 2.5 - 0.6) * 5;
       const ponyEl = $("ponytail-g");
       if (ponyEl) ponyEl.setAttribute("transform", `rotate(${ponyLag}, 124, 10)`);
 
-      // ── Spotlight follows body ──
       const spotEl = $("spotlight");
       if (spotEl) {
-        const bodyDrop = breathing ? 0 : s(t * 2) * 10;
+        const bodyDrop = breathing ? 0 : s(t * 2) * 6;
         spotEl.setAttribute("cy", `${140 + bodyDrop}`);
       }
 
       if (breathing) {
-        // Rest: sitting breathing animation
-        const b = s(t * 0.785) * 0.025 + 1; // 4s in, 4s out = 8s cycle
+        const b = s(t * 0.785) * 0.02 + 1;
         const torso = $("torso");
         if (torso) torso.setAttribute("transform", `scale(${b}, ${b})`);
-
-        // Breath guide circle
         const guideEl = $("breath-guide");
-        if (guideEl) {
-          const guideScale = s(t * 0.785) * 0.3 + 1;
-          guideEl.setAttribute("transform", `scale(${guideScale})`);
-        }
+        if (guideEl) guideEl.setAttribute("transform", `scale(${s(t * 0.785) * 0.3 + 1})`);
         const guideText = $("breath-text");
-        if (guideText) {
-          guideText.textContent = s(t * 0.785) > 0 ? "Inhale..." : "Exhale...";
-        }
-
+        if (guideText) guideText.textContent = s(t * 0.785) > 0 ? "Inhale..." : "Exhale...";
         rafRef.current = requestAnimationFrame(animate);
         return;
       }
 
-      // Reset transforms
       const ids = ["body-group", "head-g", "torso", "l-upper-arm", "l-forearm",
         "r-upper-arm", "r-forearm", "l-thigh", "l-shin", "r-thigh", "r-shin",
         "hip-g", "l-foot", "r-foot"];
@@ -173,117 +175,175 @@ const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbb
         if (el) el.setAttribute("transform", "");
       });
 
-      // Secondary motion helpers
-      const overshoot = (val: number, delay = 0.15) => val + s(t * 3 + delay) * val * 0.08;
+      const microSway = s(t * 0.8) * 0.3;
 
       switch (animType) {
         case "squats": {
-          const d = s(t * 2.5) * 0.5 + 0.5;
-          const drop = overshoot(d * 35);
-          const kneeAngle = d * 48;
-          const armAngle = d * -55;
-          // Weight shift: slight lateral tilt
-          const tilt = s(t * 1.2) * 2;
-          $("body-group")?.setAttribute("transform", `translate(0, ${drop}) rotate(${tilt}, 100, 115)`);
+          const d = asymmetric(t, 2.2);
+          const drop = d * 30;
+          const kneeAngle = d * 45;
+          const armAngle = d * -40;
+          $("body-group")?.setAttribute("transform", `translate(0, ${drop}) rotate(${microSway}, 100, 115)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * 4}, 100, 52)`);
           $("l-thigh")?.setAttribute("transform", `rotate(${kneeAngle}, 0, 0)`);
           $("r-thigh")?.setAttribute("transform", `rotate(${-kneeAngle}, 0, 0)`);
-          $("l-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.65}, 0, 0)`);
-          $("r-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.65}, 0, 0)`);
+          $("l-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.6}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${kneeAngle * 0.6}, 0, 0)`);
           $("l-upper-arm")?.setAttribute("transform", `rotate(${armAngle}, 0, 0)`);
           $("r-upper-arm")?.setAttribute("transform", `rotate(${armAngle}, 0, 0)`);
-          // Ground contact: feet flatten
-          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.15})`);
-          $("r-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.15})`);
+          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.08})`);
+          $("r-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.08})`);
           break;
         }
         case "lunges": {
-          const d = s(t * 2) * 0.5 + 0.5;
-          const drop = d * 28;
-          // Weight shift toward front leg
-          const lean = d * 6;
-          $("body-group")?.setAttribute("transform", `translate(0, ${drop}) rotate(${lean * 0.5}, 100, 115)`);
-          $("l-thigh")?.setAttribute("transform", `rotate(${d * -38}, 0, 0)`);
-          $("r-thigh")?.setAttribute("transform", `rotate(${d * 32}, 0, 0)`);
-          $("l-shin")?.setAttribute("transform", `rotate(${d * 18}, 0, 0)`);
-          $("r-shin")?.setAttribute("transform", `rotate(${d * -28}, 0, 0)`);
-          $("torso")?.setAttribute("transform", `rotate(${d * 6}, 0, 0)`);
-          // Front foot flattens, back foot lifts
-          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.1})`);
-          $("r-foot")?.setAttribute("transform", `rotate(${d * 15}, 0, 0)`);
+          const d = asymmetric(t, 1.8);
+          const drop = d * 24;
+          $("body-group")?.setAttribute("transform", `translate(0, ${drop}) rotate(${microSway}, 100, 115)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * 3}, 100, 52)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${d * -32}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${d * 28}, 0, 0)`);
+          $("l-shin")?.setAttribute("transform", `rotate(${d * 15}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${d * -22}, 0, 0)`);
+          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.06})`);
+          $("r-foot")?.setAttribute("transform", `rotate(${d * 10}, 0, 0)`);
           break;
         }
         case "pushups": {
-          const d = s(t * 2.2) * 0.5 + 0.5;
-          const armBend = overshoot(d * 32);
+          const d = asymmetric(t, 2.0);
+          const armBend = d * 28;
           $("l-upper-arm")?.setAttribute("transform", `rotate(${armBend}, 0, 0)`);
           $("r-upper-arm")?.setAttribute("transform", `rotate(${-armBend}, 0, 0)`);
-          $("l-forearm")?.setAttribute("transform", `rotate(${armBend * 0.85}, 0, 0)`);
-          $("r-forearm")?.setAttribute("transform", `rotate(${-armBend * 0.85}, 0, 0)`);
-          $("head-g")?.setAttribute("transform", `rotate(${d * 6}, 0, 0)`);
-          $("body-group")?.setAttribute("transform", `translate(0, ${d * 10})`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${armBend * 0.8}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${-armBend * 0.8}, 0, 0)`);
+          $("head-g")?.setAttribute("transform", `rotate(${d * 4}, 0, 0)`);
+          $("body-group")?.setAttribute("transform", `translate(0, ${d * 8})`);
           break;
         }
         case "jumpingjacks": {
-          const d = s(t * 4) * 0.5 + 0.5;
-          const armAng = d * 160 - 80;
-          const legAng = d * 28;
-          const jump = s(t * 4) * -10;
+          const d = easeInOut(t * 3.5);
+          const armAng = d * 140 - 70;
+          const legAng = d * 22;
+          const jump = s(t * 3.5) * -8;
           $("body-group")?.setAttribute("transform", `translate(0, ${jump})`);
           $("l-upper-arm")?.setAttribute("transform", `rotate(${-armAng}, 0, 0)`);
           $("r-upper-arm")?.setAttribute("transform", `rotate(${armAng}, 0, 0)`);
-          $("l-forearm")?.setAttribute("transform", `rotate(${-d * 22}, 0, 0)`);
-          $("r-forearm")?.setAttribute("transform", `rotate(${d * 22}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${-d * 18}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${d * 18}, 0, 0)`);
           $("l-thigh")?.setAttribute("transform", `rotate(${-legAng}, 0, 0)`);
           $("r-thigh")?.setAttribute("transform", `rotate(${legAng}, 0, 0)`);
-          // Feet point when airborne
-          const airborne = jump < -3;
-          if (airborne) {
-            $("l-foot")?.setAttribute("transform", `rotate(-15, 0, 0)`);
-            $("r-foot")?.setAttribute("transform", `rotate(15, 0, 0)`);
+          if (jump < -3) {
+            $("l-foot")?.setAttribute("transform", `rotate(-10, 0, 0)`);
+            $("r-foot")?.setAttribute("transform", `rotate(10, 0, 0)`);
           }
           break;
         }
         case "plank": {
-          const b = s(t * 1.5) * 0.018 + 1;
+          const b = s(t * 1.2) * 0.012 + 1;
           $("torso")?.setAttribute("transform", `scale(1, ${b})`);
+          $("body-group")?.setAttribute("transform", `rotate(${microSway * 0.5}, 100, 115)`);
           break;
         }
         case "glutebridges": {
-          const d = s(t * 2) * 0.5 + 0.5;
-          const hipLift = overshoot(-d * 22);
-          $("hip-g")?.setAttribute("transform", `translate(0, ${hipLift})`);
-          $("torso")?.setAttribute("transform", `rotate(${-d * 12}, 0, 0)`);
-          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 22}, 0, 0)`);
-          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 22}, 0, 0)`);
-          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.12})`);
-          $("r-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.12})`);
+          const d = asymmetric(t, 1.8);
+          $("hip-g")?.setAttribute("transform", `translate(0, ${-d * 18})`);
+          $("torso")?.setAttribute("transform", `rotate(${-d * 8}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 18}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 18}, 0, 0)`);
+          $("l-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.08})`);
+          $("r-foot")?.setAttribute("transform", `scale(1, ${1 + d * 0.08})`);
           break;
         }
         case "deadlift": {
-          const d = s(t * 1.8) * 0.5 + 0.5;
-          const hingeAngle = overshoot(d * 58);
-          $("torso")?.setAttribute("transform", `rotate(${hingeAngle}, 0, 0)`);
-          $("head-g")?.setAttribute("transform", `rotate(${hingeAngle * 0.35}, 0, 0)`);
-          $("l-upper-arm")?.setAttribute("transform", `rotate(${d * 28}, 0, 0)`);
-          $("r-upper-arm")?.setAttribute("transform", `rotate(${d * 28}, 0, 0)`);
-          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 12}, 0, 0)`);
-          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 12}, 0, 0)`);
+          const d = asymmetric(t, 1.6);
+          const hingeAngle = d * 45;
+          $("torso")?.setAttribute("transform", `rotate(${hingeAngle}, 100, 52)`);
+          $("head-g")?.setAttribute("transform", `rotate(${-hingeAngle * 0.3}, 0, 0)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${d * 12}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${d * 12}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-d * 8}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 8}, 0, 0)`);
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
+          break;
+        }
+        case "pulldown": {
+          const d = asymmetric(t, 2.0);
+          const armRaise = 140 - d * 140;
+          const forearmBend = d * 90;
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * -3}, 100, 52)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${-armRaise}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${-armRaise}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${forearmBend}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${forearmBend}, 0, 0)`);
+          $("head-g")?.setAttribute("transform", `rotate(${d * 2}, 0, 0)`);
+          break;
+        }
+        case "rows": {
+          const d = asymmetric(t, 1.8);
+          const armPull = d * 35;
+          const forearmBend = d * 45;
+          const torsoLean = 15 - d * 5;
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
+          $("torso")?.setAttribute("transform", `rotate(${torsoLean}, 100, 52)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armPull}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${armPull}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${forearmBend}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${forearmBend}, 0, 0)`);
+          $("l-thigh")?.setAttribute("transform", `rotate(${-5}, 0, 0)`);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-5}, 0, 0)`);
+          $("head-g")?.setAttribute("transform", `rotate(${-torsoLean * 0.3}, 0, 0)`);
+          break;
+        }
+        case "dips": {
+          const d = asymmetric(t, 1.8);
+          const bodyDrop = d * 14;
+          const armBend = d * 35;
+          $("body-group")?.setAttribute("transform", `translate(0, ${bodyDrop}) rotate(${microSway}, 100, 115)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armBend}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${-armBend}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${armBend * 0.9}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${-armBend * 0.9}, 0, 0)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * 3}, 100, 52)`);
+          break;
+        }
+        case "curls": {
+          const d = asymmetric(t, 2.2);
+          const forearmCurl = d * -110;
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${d * 2}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${d * 2}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${forearmCurl}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${forearmCurl}, 0, 0)`);
+          break;
+        }
+        case "lateralraise": {
+          const d = asymmetric(t, 1.8);
+          const armLift = d * -75;
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
+          $("l-upper-arm")?.setAttribute("transform", `rotate(${armLift}, 0, 0)`);
+          $("r-upper-arm")?.setAttribute("transform", `rotate(${-armLift}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${d * -8}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${d * 8}, 0, 0)`);
+          $("torso")?.setAttribute("transform", `rotate(${d * -1}, 100, 52)`);
           break;
         }
         case "donkeykicks": {
-          const d = s(t * 2.5) * 0.5 + 0.5;
-          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 58}, 0, 0)`);
-          $("r-shin")?.setAttribute("transform", `rotate(${-d * 32}, 0, 0)`);
-          $("torso")?.setAttribute("transform", `scale(1, ${1 + s(t * 2.5) * 0.012})`);
-          $("r-foot")?.setAttribute("transform", `rotate(${-d * 20}, 0, 0)`);
+          const d = asymmetric(t, 2.2);
+          $("r-thigh")?.setAttribute("transform", `rotate(${-d * 45}, 0, 0)`);
+          $("r-shin")?.setAttribute("transform", `rotate(${-d * 25}, 0, 0)`);
+          $("torso")?.setAttribute("transform", `scale(1, ${1 + s(t * 2.2) * 0.008})`);
+          $("r-foot")?.setAttribute("transform", `rotate(${-d * 15}, 0, 0)`);
+          $("body-group")?.setAttribute("transform", `rotate(${microSway * 0.5}, 100, 115)`);
           break;
         }
         default: {
-          const armSwing = s(t * 2) * 22;
+          const d = s(t * 1.8);
+          const armSwing = d * 16;
           $("l-upper-arm")?.setAttribute("transform", `rotate(${armSwing}, 0, 0)`);
           $("r-upper-arm")?.setAttribute("transform", `rotate(${-armSwing}, 0, 0)`);
-          $("l-forearm")?.setAttribute("transform", `rotate(${s(t * 2) * 12}, 0, 0)`);
-          $("r-forearm")?.setAttribute("transform", `rotate(${-s(t * 2) * 12}, 0, 0)`);
+          $("l-forearm")?.setAttribute("transform", `rotate(${d * 8}, 0, 0)`);
+          $("r-forearm")?.setAttribute("transform", `rotate(${-d * 8}, 0, 0)`);
+          $("body-group")?.setAttribute("transform", `rotate(${microSway}, 100, 115)`);
         }
       }
 
