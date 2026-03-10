@@ -27,8 +27,63 @@ interface FitnessClass {
   credits: number;
   spotsLeft: number;
   icon: string;
-  tags: string[]; // for matching quiz answers
+  tags: string[];
 }
+
+const classIconMap: Record<string, { icon: LucideIcon; bg: string; color: string }> = {
+  pilates: { icon: Wind, bg: "bg-gradient-to-br from-pink-100 to-rose-50", color: "text-primary" },
+  strength: { icon: Dumbbell, bg: "bg-gradient-to-br from-lavender/40 to-purple-50", color: "text-purple-500" },
+  hiit: { icon: Flame, bg: "bg-gradient-to-br from-amber-50 to-orange-100", color: "text-amber-500" },
+  yoga: { icon: Heart, bg: "bg-gradient-to-br from-emerald-50 to-green-100", color: "text-emerald-500" },
+  barre: { icon: Activity, bg: "bg-gradient-to-br from-pink-50 to-fuchsia-50", color: "text-pink-500" },
+  cycling: { icon: Bike, bg: "bg-gradient-to-br from-blue-50 to-sky-100", color: "text-blue-500" },
+  outdoor: { icon: Sun, bg: "bg-gradient-to-br from-lime-50 to-emerald-50", color: "text-emerald-600" },
+  dance: { icon: Music, bg: "bg-gradient-to-br from-violet-50 to-fuchsia-50", color: "text-violet-500" },
+  online: { icon: Monitor, bg: "bg-gradient-to-br from-sky-50 to-blue-100", color: "text-sky-500" },
+};
+
+function getClassIconKey(c: FitnessClass): string {
+  const type = c.type.toLowerCase();
+  if (type.includes("pilates")) return "pilates";
+  if (type.includes("strength") || type.includes("circuit")) return "strength";
+  if (type.includes("hiit")) return "hiit";
+  if (type.includes("yoga") || type.includes("sculpt")) return "yoga";
+  if (type.includes("barre")) return "barre";
+  if (type.includes("cycling") || type.includes("spin")) return "cycling";
+  if (type.includes("park") || type.includes("outdoor")) return "outdoor";
+  if (type.includes("dance")) return "dance";
+  if (type.includes("online") || type.includes("virtual")) return "online";
+  return "strength";
+}
+
+const quizIconMap: Record<string, { icon: LucideIcon; bg: string; color: string }> = {
+  "1-2": { icon: Target, bg: "bg-secondary", color: "text-primary" },
+  "3-4": { icon: Dumbbell, bg: "bg-lavender/30", color: "text-purple-500" },
+  "5+": { icon: Flame, bg: "bg-blush", color: "text-primary" },
+  toning: { icon: Dumbbell, bg: "bg-lavender/30", color: "text-purple-500" },
+  "weight-loss": { icon: Flame, bg: "bg-blush", color: "text-primary" },
+  flexibility: { icon: Wind, bg: "bg-emerald-50", color: "text-emerald-500" },
+  endurance: { icon: Activity, bg: "bg-amber-50", color: "text-amber-500" },
+  wellness: { icon: Sparkles, bg: "bg-lavender/30", color: "text-accent-foreground" },
+  pilates: { icon: Wind, bg: "bg-pink-50", color: "text-primary" },
+  yoga: { icon: Heart, bg: "bg-emerald-50", color: "text-emerald-500" },
+  strength: { icon: Dumbbell, bg: "bg-lavender/30", color: "text-purple-500" },
+  hiit: { icon: Flame, bg: "bg-amber-50", color: "text-amber-500" },
+  barre: { icon: Activity, bg: "bg-pink-50", color: "text-pink-500" },
+  dance: { icon: Music, bg: "bg-violet-50", color: "text-violet-500" },
+  low: { icon: Leaf, bg: "bg-emerald-50", color: "text-emerald-500" },
+  moderate: { icon: Zap, bg: "bg-amber-50", color: "text-amber-500" },
+  high: { icon: Flame, bg: "bg-blush", color: "text-primary" },
+  studio: { icon: Building2, bg: "bg-secondary", color: "text-foreground" },
+  gym: { icon: Dumbbell, bg: "bg-lavender/30", color: "text-purple-500" },
+  outdoor: { icon: Sun, bg: "bg-emerald-50", color: "text-emerald-600" },
+  online: { icon: Monitor, bg: "bg-sky-50", color: "text-sky-500" },
+  any: { icon: RefreshCw, bg: "bg-secondary", color: "text-muted-foreground" },
+  morning: { icon: Sunrise, bg: "bg-amber-50", color: "text-amber-500" },
+  afternoon: { icon: Sun, bg: "bg-orange-50", color: "text-orange-500" },
+  evening: { icon: Moon, bg: "bg-lavender/30", color: "text-accent-foreground" },
+  flexible: { icon: RefreshCw, bg: "bg-secondary", color: "text-muted-foreground" },
+};
 
 const CLASSES: FitnessClass[] = [
   { id: "1", studio: "CoreFlow Studio", type: "Pilates Flow", date: "Mar 10", time: "7:00 AM", location: "Downtown", duration: 50, difficulty: "Intermediate", credits: 6, spotsLeft: 4, icon: "🧘", tags: ["pilates", "flexibility", "toning", "moderate", "studio", "morning"] },
