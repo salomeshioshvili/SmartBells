@@ -36,6 +36,9 @@ const ResultsSection = ({ plan, input }: Props) => {
   const [showConfetti, setShowConfetti] = useState(true);
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerDay, setPlayerDay] = useState<{ day: DayPlan; index: number } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewExercise, setPreviewExercise] = useState<string>("");
+  const [previewDay, setPreviewDay] = useState<DayPlan | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setShowConfetti(false), 3000);
