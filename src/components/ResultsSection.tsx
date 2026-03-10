@@ -172,12 +172,21 @@ const ResultsSection = ({ plan, input }: Props) => {
                   </span>
                 </div>
 
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-1.5 sm:grid-cols-2">
                   {day.exercises.map((ex, j) => (
-                    <div key={j} className="flex items-center gap-2 text-sm text-foreground/80">
+                    <button
+                      key={j}
+                      onClick={() => {
+                        setPreviewExercise(ex);
+                        setPreviewDay(day);
+                        setPreviewOpen(true);
+                      }}
+                      className="group/ex flex items-center gap-2 text-sm text-foreground/80 rounded-xl px-2 py-1.5 text-left transition-all hover:bg-primary/[0.06] hover:text-foreground cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-1"
+                    >
                       <ExerciseIcon name={ex} />
-                      {ex}
-                    </div>
+                      <span className="flex-1 group-hover/ex:text-foreground transition-colors">{ex}</span>
+                      <Eye className="h-3.5 w-3.5 text-muted-foreground/0 group-hover/ex:text-primary/50 transition-all shrink-0" />
+                    </button>
                   ))}
                 </div>
               </motion.div>
