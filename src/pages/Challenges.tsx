@@ -1,12 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, Clock, Trophy, CheckCircle2, Sparkles, ArrowRight } from "lucide-react";
+import { Target, Clock, Trophy, CheckCircle2, Sparkles, ArrowRight, Flame, Dumbbell, Timer, Zap, Footprints, StretchHorizontal, Sunrise } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useStore, CHALLENGES, BADGES } from "@/lib/store";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+
+const challengeIconMap: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
+  flame: { icon: Flame, bg: "bg-gradient-to-br from-pink-100 to-rose-50", color: "text-primary" },
+  dumbbell: { icon: Dumbbell, bg: "bg-gradient-to-br from-lavender/40 to-purple-50", color: "text-purple-500" },
+  timer: { icon: Timer, bg: "bg-gradient-to-br from-blue-50 to-sky-100", color: "text-blue-500" },
+  zap: { icon: Zap, bg: "bg-gradient-to-br from-amber-50 to-yellow-100", color: "text-amber-500" },
+  footprints: { icon: Footprints, bg: "bg-gradient-to-br from-emerald-50 to-green-100", color: "text-emerald-500" },
+  "stretch-horizontal": { icon: StretchHorizontal, bg: "bg-gradient-to-br from-violet-50 to-fuchsia-50", color: "text-violet-500" },
+  sunrise: { icon: Sunrise, bg: "bg-gradient-to-br from-orange-50 to-amber-50", color: "text-orange-500" },
+};
 
 const cardAnim = (i: number) => ({
   initial: { opacity: 0, y: 24 } as const,
