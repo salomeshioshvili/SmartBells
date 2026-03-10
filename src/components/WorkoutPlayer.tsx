@@ -7,14 +7,14 @@ import type { DayPlan } from "@/lib/workoutGenerator";
 /* ═══════════════════════════════════════════════════════════════════
    TYPES & CLASSIFICATION
    ═══════════════════════════════════════════════════════════════════ */
-type AnimType =
+export type AnimType =
   | "squats" | "lunges" | "pushups" | "jumpingjacks"
   | "plank" | "glutebridges" | "deadlift" | "donkeykicks"
   | "pulldown" | "rows" | "dips" | "curls" | "lateralraise" | "generic";
 
-type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
+export type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
 
-function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
+export function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
   const n = name.toLowerCase();
   const db = n.includes("dumbbell") || n.includes("goblet") || n.includes("curl") || (n.includes("press") && !n.includes("leg"));
   const band = n.includes("band") || n.includes("resistance");
@@ -75,7 +75,7 @@ const muscleGradients: Record<string, [string, string]> = {
   full: ["#1e1525", "#151020"],
 };
 
-function getMuscleGradient(muscles: MuscleGroup[]): [string, string] {
+export function getMuscleGradient(muscles: MuscleGroup[]): [string, string] {
   return muscleGradients[muscles[0]] || muscleGradients.full;
 }
 
@@ -108,7 +108,7 @@ interface CharacterProps {
   faceState?: "neutral" | "exertion" | "rest";
 }
 
-const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbbells, needsBand, repFlash, faceState = "neutral" }: CharacterProps) => {
+export const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbbells, needsBand, repFlash, faceState = "neutral" }: CharacterProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
@@ -629,7 +629,7 @@ const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, needsDumbb
 /* ═══════════════════════════════════════════════════════════════════
    MUSCLE DIAGRAM
    ═══════════════════════════════════════════════════════════════════ */
-const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
+export const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
   const is = (g: MuscleGroup) => active.includes(g) || active.includes("full");
   const onFill = "hsl(340 65% 58% / 0.55)";
   const offFill = "hsl(340 65% 58% / 0.1)";
