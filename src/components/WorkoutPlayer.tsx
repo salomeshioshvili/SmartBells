@@ -7,12 +7,12 @@ import type { DayPlan } from "@/lib/workoutGenerator";
 /* ═══════════════════════════════════════════════════════════════════
    TYPES & CLASSIFICATION
    ═══════════════════════════════════════════════════════════════════ */
-type AnimType =
+export type AnimType =
   | "squats" | "lunges" | "pushups" | "jumpingjacks"
   | "plank" | "glutebridges" | "deadlift" | "donkeykicks"
   | "pulldown" | "rows" | "dips" | "curls" | "lateralraise" | "generic";
 
-type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
+export type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
 
 function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
   const n = name.toLowerCase();
