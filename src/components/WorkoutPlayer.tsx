@@ -9,7 +9,8 @@ import type { DayPlan } from "@/lib/workoutGenerator";
    ═══════════════════════════════════════════════════════════════════ */
 type AnimType =
   | "squats" | "lunges" | "pushups" | "jumpingjacks"
-  | "plank" | "glutebridges" | "deadlift" | "donkeykicks" | "generic";
+  | "plank" | "glutebridges" | "deadlift" | "donkeykicks"
+  | "pulldown" | "rows" | "dips" | "curls" | "lateralraise" | "generic";
 
 type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
 
