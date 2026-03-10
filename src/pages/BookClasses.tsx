@@ -509,7 +509,16 @@ const BookClasses = () => {
                             : "border-border/50 bg-secondary/30 text-foreground hover:bg-secondary/60"
                         }`}
                       >
-                        <span className="text-xl">{opt.icon}</span>
+                        {(() => {
+                          const qi = quizIconMap[opt.value];
+                          if (!qi) return <span className="text-xl">{opt.icon}</span>;
+                          const QIcon = qi.icon;
+                          return (
+                            <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${qi.bg}`}>
+                              <QIcon className={`h-4 w-4 ${qi.color}`} strokeWidth={1.8} />
+                            </div>
+                          );
+                        })()}
                         <span className="flex-1">{opt.label}</span>
                         {isSelected(opt.value) && <CheckCircle2 className="h-4 w-4 text-primary" />}
                       </button>
