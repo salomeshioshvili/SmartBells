@@ -16,22 +16,46 @@ type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" |
 
 function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
   const n = name.toLowerCase();
-  const db = n.includes("dumbbell") || n.includes("goblet") || n.includes("curl") || n.includes("press") && !n.includes("leg");
+  const db = n.includes("dumbbell") || n.includes("goblet") || n.includes("curl") || (n.includes("press") && !n.includes("leg"));
   const band = n.includes("band") || n.includes("resistance");
+
+  // Lat pulldowns / pull-ups — vertical pull
+  if (n.includes("pulldown") || n.includes("pull-down") || n.includes("pull-up") || n.includes("pullup") || n.includes("lat pull"))
+    return { anim: "pulldown", muscles: ["back", "arms"], needsDumbbells: false, needsBand: band };
+  // Rows — horizontal pull
+  if (n.includes("row") || n.includes("face pull") || n.includes("cable pull"))
+    return { anim: "rows", muscles: ["back", "arms"], needsDumbbells: db, needsBand: band };
+  // Dips / tricep focused
+  if (n.includes("dip") || n.includes("tricep") || n.includes("pushdown"))
+    return { anim: "dips", muscles: ["arms", "chest", "shoulders"], needsDumbbells: false, needsBand: false };
+  // Curls
+  if (n.includes("curl") || n.includes("bicep"))
+    return { anim: "curls", muscles: ["arms"], needsDumbbells: db, needsBand: band };
+  // Lateral raises
+  if (n.includes("lateral raise") || n.includes("lateral") || n.includes("shoulder raise"))
+    return { anim: "lateralraise", muscles: ["shoulders"], needsDumbbells: db, needsBand: band };
+  // Squats
   if (n.includes("squat") || n.includes("goblet") || n.includes("wall sit"))
     return { anim: "squats", muscles: ["legs", "glutes", "core"], needsDumbbells: db, needsBand: band };
+  // Lunges
   if (n.includes("lunge") || n.includes("split squat") || n.includes("curtsy") || n.includes("step-up") || n.includes("step up"))
     return { anim: "lunges", muscles: ["legs", "glutes"], needsDumbbells: db, needsBand: band };
+  // Push-ups / press
   if (n.includes("push-up") || n.includes("push up") || n.includes("pushup") || n.includes("chest") || (n.includes("press") && !n.includes("leg")))
     return { anim: "pushups", muscles: ["chest", "arms", "shoulders"], needsDumbbells: db, needsBand: band };
+  // Jumping / cardio
   if (n.includes("jack") || n.includes("jump") || n.includes("burpee") || n.includes("star") || n.includes("high knee") || n.includes("mountain"))
     return { anim: "jumpingjacks", muscles: ["full"], needsDumbbells: false, needsBand: false };
+  // Plank / core
   if (n.includes("plank") || n.includes("superman") || n.includes("crunch") || n.includes("bicycle"))
     return { anim: "plank", muscles: ["core"], needsDumbbells: false, needsBand: false };
+  // Glute bridges
   if (n.includes("glute bridge") || n.includes("hip thrust"))
     return { anim: "glutebridges", muscles: ["glutes", "core"], needsDumbbells: db, needsBand: band };
-  if (n.includes("deadlift") || n.includes("hinge") || n.includes("row") || n.includes("pull") || n.includes("swing"))
+  // Deadlifts / hinges / swings
+  if (n.includes("deadlift") || n.includes("hinge") || n.includes("swing"))
     return { anim: "deadlift", muscles: ["back", "legs", "glutes"], needsDumbbells: db, needsBand: band };
+  // Donkey kicks
   if (n.includes("donkey") || n.includes("kick") || n.includes("fire hydrant") || n.includes("clamshell"))
     return { anim: "donkeykicks", muscles: ["glutes"], needsDumbbells: false, needsBand: band };
   return { anim: "generic", muscles: ["full"], needsDumbbells: db, needsBand: band };
