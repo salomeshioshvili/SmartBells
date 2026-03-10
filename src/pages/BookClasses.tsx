@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays, Clock, MapPin, Filter, CheckCircle2, X, Sparkles, Users,
   CreditCard, ChevronRight, ChevronLeft, Dumbbell, Heart, Flame, Sun,
-  Leaf, Target, RotateCcw,
+  Leaf, Target, RotateCcw, Activity, Zap, Bike, Wind, Music, Monitor,
+  Building2, Sunrise, Moon, RefreshCw,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
