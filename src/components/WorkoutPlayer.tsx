@@ -629,7 +629,7 @@ export const SVGCharacter = ({ animType, breathing, paused, isFloor, isHome, nee
 /* ═══════════════════════════════════════════════════════════════════
    MUSCLE DIAGRAM
    ═══════════════════════════════════════════════════════════════════ */
-const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
+export const MuscleDiagram = ({ active }: { active: MuscleGroup[] }) => {
   const is = (g: MuscleGroup) => active.includes(g) || active.includes("full");
   const onFill = "hsl(340 65% 58% / 0.55)";
   const offFill = "hsl(340 65% 58% / 0.1)";
