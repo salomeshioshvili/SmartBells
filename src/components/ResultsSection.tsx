@@ -236,6 +236,16 @@ const ResultsSection = ({ plan, input }: Props) => {
           dayIndex={playerDay.index}
         />
       )}
+
+      {/* Exercise Preview Modal */}
+      <ExercisePreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        exerciseName={previewExercise}
+        sets={previewDay?.sets ?? "3 sets × 10 reps"}
+        allExercises={previewDay?.exercises}
+        onNavigate={(name) => setPreviewExercise(name)}
+      />
     </>
   );
 };
