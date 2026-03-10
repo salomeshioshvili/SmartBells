@@ -14,7 +14,7 @@ export type AnimType =
 
 export type MuscleGroup = "legs" | "chest" | "back" | "shoulders" | "core" | "glutes" | "arms" | "full";
 
-function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
+export function classifyExercise(name: string): { anim: AnimType; muscles: MuscleGroup[]; needsDumbbells: boolean; needsBand: boolean } {
   const n = name.toLowerCase();
   const db = n.includes("dumbbell") || n.includes("goblet") || n.includes("curl") || (n.includes("press") && !n.includes("leg"));
   const band = n.includes("band") || n.includes("resistance");
