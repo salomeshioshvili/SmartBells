@@ -92,9 +92,20 @@ const Challenges = () => {
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary text-2xl">
-                    {ch.icon}
-                  </div>
+                  {(() => {
+                    const iconData = challengeIconMap[ch.icon];
+                    if (!iconData) return <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-secondary text-2xl">{ch.icon}</div>;
+                    const IconComp = iconData.icon;
+                    return (
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 3 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                        className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${iconData.bg} shadow-sm`}
+                      >
+                        <IconComp className={`h-5.5 w-5.5 ${iconData.color}`} size={22} strokeWidth={1.8} />
+                      </motion.div>
+                    );
+                  })()}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-lg font-bold">{ch.title}</h3>
