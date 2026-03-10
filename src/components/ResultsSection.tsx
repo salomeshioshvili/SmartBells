@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Calendar, Flame, Heart, Sparkles, Target, TrendingUp, Zap, Moon, Dumbbell, Timer, Play,
+  Calendar, Flame, Heart, Sparkles, Target, TrendingUp, Zap, Moon, Dumbbell, Timer, Play, Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { categorizeExercise, CATEGORY_LOTTIE } from "@/lib/exerciseCategory";
 import WorkoutPlayer from "@/components/WorkoutPlayer";
+import ExercisePreviewModal from "@/components/ExercisePreviewModal";
 import type { WorkoutPlan, WorkoutInput, DayPlan } from "@/lib/workoutGenerator";
 
 interface Props {
